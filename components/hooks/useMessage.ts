@@ -1,9 +1,10 @@
 "use client";
-import { useMutation } from "@tanstack/react-query";
-import { queryClient } from "@/app/tickets/layout";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { add_message, get_ticket } from "../queries/queries";
 
 const useMessage = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: ({
       content,
