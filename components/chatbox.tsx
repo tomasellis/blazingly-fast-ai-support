@@ -1,10 +1,5 @@
 "use client";
 import React from "react";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
-import { Actions, State } from "./reducers/TicketsReducer";
-import Loading from "@/app/tickets/loading";
-import ChatInput from "./chatinput";
 
 export default function Chatbox(props: {
   params: { ticket_id: string; page: number };

@@ -36,8 +36,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-/app/api
-/app/old
-/components/reducers
 __pycache__
 db.sqlite3
