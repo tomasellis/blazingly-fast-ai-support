@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "chatathome"
+version = "0.1.0"
+description = ""
+authors = ["hover <tomas.sydney.ellis@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+langchain = "^0.1.0"
+langserve = { extras = ["server"], version = "^0.0.38" }
+openai = "^1.6.1"
+python-dotenv = "^1.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

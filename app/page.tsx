@@ -1,11 +1,12 @@
-import Image from 'next/image'
-import { Button } from '@/components/ui/button'
-import Chat from '@/components/chat'
+import Link from "next/link";
 
 export default function Home() {
   return (
-    <main className="flex justify-center">
-      <Chat></Chat>
-    </main>
-  )
+    <div className="font-black text-9xl">
+      Nothing to see here chief, go to{" "}
+      <Link className="text-blue-500" href={"/tickets"}>
+        TICKETS
+      </Link>
+    </div>
+  );
 }
