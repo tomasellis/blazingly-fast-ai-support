@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "../styles/globals.css";
-import { Inter as FontSans } from "next/font/google";
-
 import { cn } from "../lib/utils";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Providers } from "@/components/providers";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -28,8 +25,7 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={cn(
-          "bg-background font-sans antialiased w-full h-screen",
-          /*  fontSans.variable, */
+          "bg-background font-sans antialiased h-screen w-screen ",
           inter.className
         )}
       >

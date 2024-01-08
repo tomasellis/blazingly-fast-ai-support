@@ -1,11 +1,30 @@
 import { nanoid } from "ai";
 import { relations, sql } from "drizzle-orm";
 import { text, integer, sqliteTable, index } from "drizzle-orm/sqlite-core";
+import { customType } from "drizzle-orm/sqlite-core";
+
+const properDate = customType<{
+  data: Date;
+  driverData: number;
+}>({
+  dataType() {
+    return `integer`;
+  },
+  fromDriver(value: number): Date {
+    return new Date(value);
+  },
+  toDriver(date: Date): number {
+    return date.valueOf();
+  },
+});
 
 export const ticket = sqliteTable("ticket", {
   id: text("id").primaryKey().$defaultFn(nanoid),
   status: integer("status", { mode: "boolean" }).notNull().default(false),
-  description: text("description"),
+  description: text("description").notNull(),
+  timestamp: properDate("timestamp", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
 });
 
 export const ticket_relations = relations(ticket, ({ many }) => ({
@@ -22,9 +41,9 @@ export const message = sqliteTable(
     content: text("content").notNull(),
     role: text("role", { enum: ["ai", "user"] }),
 
-    timestamp: integer("timestamp", { mode: "timestamp" })
+    timestamp: properDate("timestamp", { mode: "timestamp_ms" })
       .notNull()
-      .default(sql`CURRENT_TIMESTAMP`),
+      .$defaultFn(() => new Date()),
   },
   (table) => {
     return {

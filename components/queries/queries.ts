@@ -1,9 +1,14 @@
 "use server";
 import { db } from "@/db/db";
-import { message } from "@/db/schema";
+import { message, ticket } from "@/db/schema";
 import { asc, desc } from "drizzle-orm";
 import { server_env } from "@/env";
 
+import { RemoteRunnable } from "langchain/runnables/remote";
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 export async function get_ticket(ticket_id: string) {
   const ticket = await db.query.ticket.findFirst({
     where: (ticket, { eq }) => eq(ticket.id, ticket_id),
@@ -19,10 +24,10 @@ export async function get_ticket(ticket_id: string) {
 }
 
 export async function get_tickets() {
+  await sleep(2000);
   const tickets = await db.query.ticket.findMany({
-    orderBy: (ticket) => desc(ticket.id),
+    orderBy: (ticket) => desc(ticket.timestamp),
   });
-  console.log(tickets);
   return tickets;
 }
 
@@ -33,63 +38,76 @@ export async function add_message({
   content: string;
   ticket_id: string;
 }) {
-  const aires = await get_ai_response({ content: content });
-
   const added_message = await db.insert(message).values({
     content,
     ticket_id,
     role: "user",
   });
+  const { result } = await get_ai_response({ ticket_id });
 
   const added_message_ai = await db.insert(message).values({
-    content: aires.data,
+    content: result ?? "",
     ticket_id,
     role: "ai",
   });
 
-  return { response: aires.data };
+  return { result };
 }
 
-export async function get_ai_response({ content }: { content: string }) {
-  const data = await GetAIResponse(content);
-  return data;
-}
+export async function add_ticket({ description }: { description: string }) {
+  await sleep(5000);
+  const added_ticket = await db
+    .insert(ticket)
+    .values({
+      description,
+    })
+    .returning();
 
-async function GetAIResponse(text: string) {
-  const { body } = await fetch(server_env.LANGCHAIN_SERVER_URL, {
-    cache: "no-store",
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      input: text,
-    }),
+  const added_message_ai = await db.insert(message).values({
+    content: "Hello, how can I help you?",
+    ticket_id: added_ticket[0].id,
+    role: "ai",
   });
-  const aiResponse = body ? await ReadStream(body) : null;
 
-  return { data: aiResponse };
+  return { added_ticket, added_message_ai };
 }
 
-async function ReadStream(stream: ReadableStream) {
-  const reader = stream.getReader();
-  let hold: string = "";
+async function get_ai_response({ ticket_id }: { ticket_id: string }) {
   try {
-    while (true) {
-      const { done, value } = await reader.read();
+    const ticket = await get_ticket(ticket_id);
 
-      if (done) {
-        // Stream is done
-        return JSON.parse(hold).output.content;
-      }
+    const parsed_messages = ticket?.messages
+      .map((message) => {
+        return `${message.role === "ai" ? "AI" : "User"}: ${message.content}`;
+      })
+      .join("\n\n");
 
-      // Do something with each chunk, maybe convert it to text
-      const chunkText = new TextDecoder().decode(value);
-      hold = chunkText;
-    }
-  } catch (error) {
-    console.error("Error reading stream:", error);
-  } finally {
-    reader.releaseLock(); // Release the lock when you're done
+    const chain = new RemoteRunnable({
+      url: server_env.LANGCHAIN_SERVER_URL + "/chat",
+    });
+
+    const INPUT = `You are the best customer support agent of the world. 
+You work for a sky island agency, you sell sky islands to customers.
+Be concise and formal in your response. You can and should use emojis
+to make the customer feel better. 
+
+Current conversation:
+${parsed_messages}
+
+AI: `;
+
+    console.log("INPUT", INPUT);
+
+    let result = (await chain.invoke({
+      input: INPUT,
+    })) as string;
+    console.log("RESULT_>_>_", result);
+
+    console.log({ result });
+
+    return { result };
+  } catch (err) {
+    console.log("ticket", err);
+    return { text: "f" };
   }
 }

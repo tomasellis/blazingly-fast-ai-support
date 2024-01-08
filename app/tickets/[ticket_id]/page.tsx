@@ -1,58 +1,87 @@
 "use client";
 import React from "react";
-import Loading from "@/app/tickets/loading";
-import { useTickets } from "@/components/hooks/useTickets";
 import ChatInput from "@/components/chatinput";
-import { useSearchParams } from "next/navigation";
 import { useTicket } from "@/components/hooks/useTicket";
+import Message from "@/components/message";
+import FakeMessage from "@/components/fakemessage";
 
 export default function Chatbox({ params }: { params: { ticket_id: string } }) {
-  const { data, isLoading, isFetching } = useTicket(params.ticket_id);
+  const { data, isLoading } = useTicket(params.ticket_id);
+  const [isPending, setIsPending] = React.useState(false);
+  const [bottom, setBottom] = React.useState(true);
+  const scrollerRef = React.useRef<HTMLDivElement>(null);
 
-  console.log("RENDER: Chatbox");
+  const dateFormatter = React.useMemo(() => {
+    return new Intl.DateTimeFormat("es-AR", {
+      dateStyle: "short",
+      timeStyle: "short",
+    });
+  }, []);
+
+  const handleScrollEvent = (event: React.UIEvent<HTMLDivElement, UIEvent>) => {
+    const target = event.target as HTMLElement;
+    const bottom =
+      target.scrollHeight - target.scrollTop === target.clientHeight;
+    if (bottom) {
+      console.log("bottom");
+      return setBottom(true);
+    }
+    return setBottom(false);
+  };
+
+  const handleScrollOnClick = (ref: React.RefObject<HTMLDivElement>) => {
+    if (ref.current) {
+      const target = ref.current;
+      target.scrollIntoView({
+        behavior: "smooth",
+      });
+    }
+  };
+
+  console.log("RENDER: ", { isPending });
+
   return (
     <div className="w-full h-full flex flex-col no-scrollbar">
-      <div className="max-h-[90vh] min-h-[90vh] no-scrollbar overflow-auto p-4 space-y-4">
-        {isLoading && <Loading></Loading>}
+      <div
+        onScroll={handleScrollEvent}
+        ref={scrollerRef}
+        className="h-full no-scrollbar overflow-auto p-4 space-y-4"
+      >
         {data &&
-          data.messages.map((message) => {
-            if (message.role === "ai") {
-              return (
-                <div key={message.id} className="flex items-end justify-start">
-                  <div className="flex flex-col space-y-1  max-w-xs">
-                    <p className="text-sm text-gray-400 text-start">
-                      {message.role} •{" "}
-                      {new Date(message.timestamp).toLocaleString("es", {
-                        dateStyle: "short",
-                        timeStyle: "short",
-                      })}
-                    </p>
-                    <p className="px-4 py-2 rounded-lg bg-gray-700 text-white">
-                      {message.content}
-                    </p>
-                  </div>
-                </div>
-              );
-            }
-            return (
-              <div key={message.id} className="flex items-end justify-end">
-                <div className="flex flex-col space-y-1  max-w-xs">
-                  <p className="text-sm text-gray-400 text-end">
-                    {message.role} •{" "}
-                    {new Date(message.timestamp).toLocaleString("es", {
-                      dateStyle: "short",
-                      timeStyle: "short",
-                    })}
-                  </p>
-                  <p className="px-4 py-2 rounded-lg bg-indigo-500 text-gray-300 text-left">
-                    {message.content}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
+          data.messages.map((message, index) => (
+            <Message
+              key={message.id}
+              dateFormatter={dateFormatter}
+              message={message}
+              last={
+                !isPending
+                  ? data.messages.length === index + 1
+                    ? true
+                    : false
+                  : false
+              }
+            />
+          ))}
+        {!!!data?.messages.length && (
+          <div className="flex-1 flex flex-grow w-full h-full justify-center items-center text-3xl">
+            <h1>
+              <span className="opacity-50">🌀</span>This chat is empty...
+            </h1>
+          </div>
+        )}
+        {/* {!bottom && (
+          <Button
+            variant="default"
+            size="icon"
+            className="fixed right-[2%] bottom-[15%] rounded-full "
+          >
+            <ChevronDownIcon className=" bottom-0 right-0 h-6 w-6" />
+          </Button>
+        )} */}
+        {isPending && <FakeMessage />}
       </div>
-      <ChatInput ticketId={params.ticket_id} />
+
+      <ChatInput ticketId={params.ticket_id} setIsPending={setIsPending} />
     </div>
   );
 }

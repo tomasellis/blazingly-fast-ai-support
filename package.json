@@ -7,13 +7,17 @@
     "start": "next start",
     "lint": "next lint",
     "dev:next": "next dev",
-    "dev:python": "poetry install && poetry run uvicorn app:app --reload --env-file .env.local --log-level debug",
+    "dev:python": "poetry install && poetry run uvicorn app:app --reload --env-file .env --log-level debug",
     "dev": "concurrently 'npm:dev:*'",
     "seed": "tsx db/seed.ts",
     "resetdb": "rm db.sqlite3 && drizzle-kit push:sqlite && tsx db/seed.ts"
   },
   "dependencies": {
     "@libsql/client": "0.4.0-pre.7",
+    "@radix-ui/react-dialog": "^1.0.5",
+    "@radix-ui/react-icons": "^1.3.0",
+    "@radix-ui/react-label": "^2.0.2",
+    "@radix-ui/react-popover": "^1.0.7",
     "@radix-ui/react-slot": "^1.0.2",
     "@tanstack/react-query": "^5.17.5",
     "@tanstack/react-query-next-experimental": "^5.17.8",
@@ -32,6 +36,7 @@
     "openai": "^4.24.1",
     "react": "^18",
     "react-dom": "^18",
+    "react-textarea-autosize": "^8.5.3",
     "tailwind-merge": "^2.2.0",
     "tailwindcss-animate": "^1.0.7",
     "valibot": "^0.25.0"

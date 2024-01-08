@@ -11,8 +11,6 @@ const useTickets = () => {
     getNextPageParam: (lastPage, pages) => lastPage.offset + 1,
   }); */
 
-
-
   return useQuery({
     queryKey: ["tickets"],
     queryFn: () => get_tickets(),
