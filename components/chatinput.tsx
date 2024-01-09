@@ -20,6 +20,7 @@ export default function ChatInput({
   const { mutate, isError, reset, isPending } = useMessage();
 
   const formRef = React.useRef<HTMLFormElement>(null);
+  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   const handleSubmit = () => {
     console.log("ACTUAL ON SUBMIT INPUT--->", { input });
@@ -78,12 +79,12 @@ export default function ChatInput({
         e.preventDefault();
         handleSubmit();
       }}
-      className="flex-1 flex w-full justify-center items-center 
+      className="h-min flex-initial flex w-full justify-center items-center 
       box-border border-solid border-red-500flex px-4 py-4 border-t border-gray-700  bg-gray-800"
     >
       <TextareaAutosize
         name="msg"
-        /* ref={areaRef} */
+        ref={textareaRef}
         value={input}
         onChange={(e) => {
           setInput(e.currentTarget.value);
@@ -91,12 +92,18 @@ export default function ChatInput({
         onKeyDown={(e) => {
           handleKeyDown(e);
         }}
-        className="no-scrollbar outline-none p-2 mr-5 flex-1 h-full rounded-sm w-full box-border bg-gray-700 text-gray-300"
+        className="max-h-[140px] min-h-[25px] outline-none p-2 mr-5 flex-1 h-full rounded-sm w-full box-border bg-gray-700 text-gray-300"
         placeholder={
           ticketId ? "Type your message here..." : "Please select a ticket"
         }
-        maxRows={2}
+        maxRows={5}
+        minRows={1}
+        maxLength={500}
+        style={{
+          resize: "none",
+        }}
         required
+        autoComplete="off"
       />
 
       <Button

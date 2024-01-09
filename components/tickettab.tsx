@@ -18,7 +18,7 @@ export default function TicketTab({
 }) {
   return (
     <Link
-      href={`/tickets/${ticket.id}`}
+      href={`/tickets/${ticket.id}#last`}
       onClick={() => handleClick(ticket.id)}
       className={``}
     >

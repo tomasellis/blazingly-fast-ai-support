@@ -41,7 +41,7 @@ export default function Chatbox({ params }: { params: { ticket_id: string } }) {
   console.log("RENDER: ", { isPending });
 
   return (
-    <div className="w-full h-full flex flex-col no-scrollbar">
+    <div className="h-full w-full flex flex-col no-scrollbar">
       <div
         onScroll={handleScrollEvent}
         ref={scrollerRef}
@@ -80,7 +80,6 @@ export default function Chatbox({ params }: { params: { ticket_id: string } }) {
         )} */}
         {isPending && <FakeMessage />}
       </div>
-
       <ChatInput ticketId={params.ticket_id} setIsPending={setIsPending} />
     </div>
   );

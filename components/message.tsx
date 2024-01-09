@@ -18,13 +18,13 @@ export default function Message({
 }) {
   const messageRef = React.useRef<HTMLDivElement>(null);
 
-  React.useEffect(() => {
+  /* React.useEffect(() => {
     if (last && messageRef.current) {
       messageRef.current.scrollIntoView({
         behavior: "smooth",
       });
     }
-  }, []);
+  }, []); */
 
   if (message.role === "ai") {
     return (
@@ -32,6 +32,7 @@ export default function Message({
         ref={messageRef}
         key={message.id}
         className="flex items-end justify-start"
+        id={last ? "last" : ""}
       >
         <div className="flex flex-col space-y-1  max-w-xs">
           <p className="text-sm text-gray-400 text-start">
