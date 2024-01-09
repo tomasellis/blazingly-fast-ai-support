@@ -62,10 +62,17 @@ export default function Chatbox({ params }: { params: { ticket_id: string } }) {
               }
             />
           ))}
-        {!!!data?.messages.length && (
+        {!isLoading && !data?.messages.length && (
           <div className="flex-1 flex flex-grow w-full h-full justify-center items-center text-3xl">
             <h1>
               <span className="opacity-50">🌀</span>This chat is empty...
+            </h1>
+          </div>
+        )}
+        {isLoading && (
+          <div className="flex-1 flex flex-grow w-full h-full justify-center items-center text-3xl">
+            <h1>
+              <span className="opacity-50">🌀</span>Loading chat...
             </h1>
           </div>
         )}

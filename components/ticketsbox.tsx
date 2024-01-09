@@ -27,7 +27,7 @@ export default function TicketsBox() {
     }, []);
  */
   return (
-    <div className="flex flex-col w-[25%] h-full border-2 border-cyan-400 no-scrollbar border-r-2 ">
+    <div className="flex flex-col w-[25%] h-full no-scrollbar border-r-2 ">
       <h2 className="text-2xl font-bold text-indigo-500 py-4 px-4 border-b border-gray-700">
         Customer Tickets
       </h2>
