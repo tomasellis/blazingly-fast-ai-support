@@ -1,58 +1,89 @@
 "use client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { add_message, get_ticket } from "../queries/queries";
-import { useTicket } from "./useTicket";
+import { add_message, get_infinite_chat, get_ticket } from "../queries/queries";
+import useInfiniteChat from "./useInfiniteChat";
+import React from "react";
 
-const useMessage = () => {
+type InfiniteChatMessages = Awaited<ReturnType<typeof get_infinite_chat>>;
+type InfiniteChat = {
+  pages: InfiniteChatMessages[];
+  pageParams: Date[];
+};
+type Message = {
+  id: string;
+  timestamp: Date;
+  ticket_id: string;
+  content: string;
+  role: "ai" | "user" | null;
+};
+
+const useMessage = (ticket_id: string) => {
   const queryClient = useQueryClient();
+  const { fetchNextPage, fetchPreviousPage } = useInfiniteChat(ticket_id);
 
-  return useMutation({
+  const [optimisticMessage, setOptimisticMessage] =
+    React.useState<Message | null>(null);
+
+  const messageMut = useMutation({
     mutationFn: ({
       content,
       ticket_id,
+      timestamp,
+      id,
     }: {
       content: string;
       ticket_id: string;
+      timestamp: Date;
+      id: string;
     }) => {
-      console.log("MUTATING: Messages");
       return add_message({
         content,
         ticket_id,
+        timestamp,
+        id,
       });
     },
-    mutationKey: ["message"],
-    retry: false,
+    mutationKey: ["message", ticket_id, "chat"],
     onMutate: async (variables) => {
-      // Cancel any outgoing refetches
-      // (so they don't overwrite our optimistic update)
       await queryClient.cancelQueries({
         queryKey: ["ticket", variables.ticket_id],
       });
 
-      // Snapshot the previous value
-      const currentTicket = queryClient.getQueryData([
-        "ticket",
-        variables.ticket_id,
-      ]) as Awaited<ReturnType<typeof get_ticket>>;
-
-      if (currentTicket) {
-        // Optimistically update to the new value
-        queryClient.setQueryData(["ticket", variables.ticket_id], {
-          ...currentTicket,
-          messages: [
-            ...currentTicket.messages,
-            {
-              id: crypto.randomUUID(),
-              content: variables.content,
-              role: "user",
-              ticket_id: variables.ticket_id,
-              timestamp: new Date(),
-            },
-          ],
-        });
-
-        return { currentTicket, variables };
-      }
+      setOptimisticMessage({
+        content: variables.content,
+        id: variables.id,
+        role: "user",
+        ticket_id: ticket_id,
+        timestamp: variables.timestamp,
+      });
+      /* 
+      queryClient.setQueryData(
+        ["ticket", ticket_id],
+        (infinite_chat: InfiniteChat) => {
+          if (infinite_chat) {
+            return {
+              pages: [
+                ...infinite_chat.pages,
+                [
+                  {
+                    id: variables.id,
+                    content: variables.content,
+                    role: "user",
+                    ticket_id: ticket_id,
+                    timestamp: variables.timestamp,
+                  },
+                ],
+              ],
+              pageParams: [
+                ...infinite_chat.pageParams,
+                { type: "next", cursor: variables.timestamp },
+              ],
+            };
+          }
+        }
+      );
+ */
+      return { variables };
     },
     onError: async (error, variables, context) => {
       // An error happened!
@@ -61,48 +92,48 @@ const useMessage = () => {
         error,
         variables
       );
-      await queryClient.cancelQueries({ queryKey: ["ticket"] });
     },
     onSuccess: async (data, variables, context) => {
-      const ai_response = data.result;
-      // Stop from querying
-      await queryClient.cancelQueries({ queryKey: ["ticket"] });
+      /* queryClient.setQueryData(
+        ["ticket", variables.ticket_id],
+        (infinite_chat: InfiniteChat) => {
+          let nextInfinitePages = [...infinite_chat.pages];
 
-      // Snapshot the previous value
-      const ticketSnapshot = queryClient.getQueryData<
-        Awaited<ReturnType<typeof get_ticket>>
-      >(["ticket", variables.ticket_id]);
+          let lastPage = nextInfinitePages.pop();
 
-      if (ticketSnapshot) {
-        // Optimistically update to the new value
-        console.log("UPDATE ---->", ticketSnapshot);
-        queryClient.setQueryData<Awaited<ReturnType<typeof get_ticket>>>(
-          ["ticket", variables.ticket_id],
-          {
-            ...ticketSnapshot,
-            messages: [
-              ...ticketSnapshot.messages,
-              {
-                id: crypto.randomUUID(),
-                content: ai_response ?? "",
-                role: "ai",
-                ticket_id: variables.ticket_id,
-                timestamp: new Date(),
-              },
-            ],
+          if (lastPage) {
+            lastPage.push({
+              id: data.added_message_ai[0].id,
+              content: data.added_message_ai[0].content,
+              role: "ai",
+              ticket_id: data.added_message_ai[0].ticket_id,
+              timestamp: data.added_message_ai[0].timestamp,
+              ticket: { id: variables.ticket_id },
+            });
           }
-        );
-      }
 
-      queryClient.invalidateQueries({ queryKey: ["ticket"] });
-
-      return { ticketSnapshot };
+          return {
+            pages: [...nextInfinitePages],
+            pageParams: [...infinite_chat.pageParams],
+          };
+        }
+      );
+      return {}; */
+      //await fetchPreviousPage();
+      console.log("FETCHING NEXT PAGE");
+      await fetchNextPage();
+      setOptimisticMessage(null);
     },
-    onSettled: (data, error, variables, context) => {
+    onSettled: async (data, error, variables, context) => {
       // Error or success... doesn't matter!
       //console.log("got it!", { response: data?.data.aiResponse.data });
+      await queryClient.invalidateQueries({
+        queryKey: ["tickets"],
+      });
     },
   });
+
+  return { messageMut, optimisticMessage };
 };
 
 export default useMessage;

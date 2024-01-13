@@ -19,7 +19,7 @@ const properDate = customType<{
 });
 
 export const ticket = sqliteTable("ticket", {
-  id: text("id").primaryKey().$defaultFn(nanoid),
+  id: text("id").primaryKey(),
   status: integer("status", { mode: "boolean" }).notNull().default(false),
   description: text("description").notNull(),
   timestamp: properDate("timestamp", { mode: "timestamp_ms" })
@@ -37,7 +37,7 @@ export const message = sqliteTable(
     id: text("id").primaryKey().$defaultFn(nanoid),
     ticket_id: text("ticket_id")
       .notNull()
-      .references(() => ticket.id),
+      .references(() => ticket.id, { onDelete: "cascade" }),
     content: text("content").notNull(),
     role: text("role", { enum: ["ai", "user"] }),
 

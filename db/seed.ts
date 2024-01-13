@@ -7,13 +7,25 @@ import { message, ticket } from "./schema";
     const first_ticket = nanoid();
     const second_ticket = nanoid();
 
-    await tx
+    Array(10).map((_, index) =>{
+      await tx
       .insert(ticket)
-      .values([{ id: first_ticket, status: false, description: "It's dead" }]);
+      .values([{ id: first_ticket, status: false, description: "Help pls" }]);
+      
+      await tx.insert(message).values([
+        {
+          content: index,
+          ticket_id: first_ticket,
+          role: "ai",
+        },
+      ]);
+    })
+
+    
     await tx
       .insert(ticket)
       .values([
-        { id: second_ticket, status: false, description: "It's almost dead" },
+        { id: second_ticket, status: false, description: "Someone help" },
       ]);
 
     await tx.insert(message).values([
@@ -49,4 +61,3 @@ import { message, ticket } from "./schema";
     ]);
   });
 })();
-

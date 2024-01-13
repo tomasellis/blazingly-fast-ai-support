@@ -1,6 +1,6 @@
 import { cx } from "class-variance-authority";
 import Link from "next/link";
-import React from "react";
+import React, { startTransition, useTransition } from "react";
 
 export default function TicketTab({
   ticket,
@@ -21,6 +21,7 @@ export default function TicketTab({
       href={`/tickets/${ticket.id}#last`}
       onClick={() => handleClick(ticket.id)}
       className={``}
+      draggable={false}
     >
       <div
         className={cx(

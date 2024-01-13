@@ -1,6 +1,6 @@
-import Link from "next/link";
 import React from "react";
 import { Button } from "./ui/button";
+import "@/styles/loading.css";
 
 export default function FakeTicketTab() {
   return (

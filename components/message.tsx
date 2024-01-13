@@ -1,9 +1,8 @@
 "use client";
+import { dateFormatter } from "@/lib/utils";
 import React from "react";
-
 export default function Message({
   message,
-  dateFormatter,
   last,
 }: {
   message: {
@@ -13,7 +12,6 @@ export default function Message({
     ticket_id: string;
     role: "ai" | "user" | null;
   };
-  dateFormatter: Intl.DateTimeFormat;
   last: boolean;
 }) {
   const messageRef = React.useRef<HTMLDivElement>(null);

@@ -10,6 +10,7 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 export async function get_ticket(ticket_id: string) {
+  console.log("Getting ticket");
   const ticket = await db.query.ticket.findFirst({
     where: (ticket, { eq }) => eq(ticket.id, ticket_id),
     with: {
@@ -19,57 +20,153 @@ export async function get_ticket(ticket_id: string) {
       },
     },
   });
-
+  console.log({ ticket });
   return ticket;
 }
 
+export async function get_infinite_chat({
+  pageParam,
+  ticket_id,
+}: {
+  ticket_id: string;
+  pageParam: { cursor: Date; type: "prev" | "next" | string };
+}) {
+  console.log("Getting infinite ticket - ", pageParam);
+  const messageLimit = 4;
+  const messages = await db.query.message.findMany({
+    where: (message, { eq, lt, and, gt }) => {
+      if (pageParam.type === "init") {
+        return eq(message.ticket_id, ticket_id);
+      } else if (pageParam.type === "prev") {
+        return and(
+          eq(message.ticket_id, ticket_id),
+          lt(message.timestamp, pageParam.cursor)
+        );
+      }
+      return and(
+        eq(message.ticket_id, ticket_id),
+        gt(message.timestamp, pageParam.cursor)
+      );
+    },
+    orderBy: desc(message.timestamp),
+    limit: messageLimit,
+  });
+
+  if (pageParam.type === "prev") {
+    if (messages.length < messageLimit) {
+      return { messages: messages, next: false };
+    } else {
+      return { messages: messages, next: true };
+    }
+  }
+
+  if (pageParam.type === "next") {
+    if (messages.length < messageLimit) {
+      return { messages: messages, next: false };
+    } else {
+      return { messages: messages, next: true };
+    }
+  }
+
+  return { messages, next: true };
+}
+
 export async function get_tickets() {
-  await sleep(2000);
+  console.log("Getting tickets");
   const tickets = await db.query.ticket.findMany({
     orderBy: (ticket) => desc(ticket.timestamp),
   });
+  await sleep(2000);
+
   return tickets;
 }
 
 export async function add_message({
   content,
   ticket_id,
+  timestamp,
+  id,
 }: {
   content: string;
   ticket_id: string;
+  timestamp: Date;
+  id: string;
 }) {
-  const added_message = await db.insert(message).values({
-    content,
-    ticket_id,
-    role: "user",
-  });
+  console.log("Adding messages");
+
+  const added_message = await db
+    .insert(message)
+    .values({
+      content,
+      ticket_id,
+      timestamp,
+      id,
+    })
+    .returning();
+
+  console.log("Getting AI response - messages");
+
   const { result } = await get_ai_response({ ticket_id });
+  console.log("Adding AI response - messages");
 
-  const added_message_ai = await db.insert(message).values({
-    content: result ?? "",
-    ticket_id,
-    role: "ai",
-  });
+  const added_message_ai = await db
+    .insert(message)
+    .values({
+      content: result ?? "",
+      ticket_id,
+      role: "ai",
+    })
+    .returning();
 
-  return { result };
+  await sleep(2000);
+  return { added_message };
 }
 
-export async function add_ticket({ description }: { description: string }) {
-  await sleep(5000);
+export async function add_ticket({
+  description,
+  ticket_id,
+  first_message: { content, timestamp, id },
+}: {
+  description: string;
+  ticket_id: string;
+  first_message: { content: string; timestamp: Date; id: string };
+}) {
+  console.log("Creating ticket!", { description, ticket_id });
   const added_ticket = await db
     .insert(ticket)
     .values({
       description,
+      id: ticket_id,
+    })
+    .returning();
+  console.log("Creating ticket - Message!");
+
+  console.log("Creating message!", { content, ticket_id, id });
+  const added_message = await db.insert(message).values({
+    content,
+    ticket_id: ticket_id,
+    role: "user",
+    timestamp,
+    id: id,
+  });
+  console.log("Creating ticket - Ai Response!");
+
+  const ai_response = await get_ai_response({
+    ticket_id,
+  });
+
+  const added_message_ai = await db
+    .insert(message)
+    .values({
+      content: ai_response.result ?? "",
+      ticket_id,
+      role: "ai",
     })
     .returning();
 
-  const added_message_ai = await db.insert(message).values({
-    content: "Hello, how can I help you?",
-    ticket_id: added_ticket[0].id,
-    role: "ai",
-  });
-
-  return { added_ticket, added_message_ai };
+  await sleep(2000);
+  console.log({ added_message, added_ticket, added_message_ai });
+  return { added_ticket };
 }
 
 async function get_ai_response({ ticket_id }: { ticket_id: string }) {
@@ -89,7 +186,7 @@ async function get_ai_response({ ticket_id }: { ticket_id: string }) {
     const INPUT = `You are the best customer support agent of the world. 
 You work for a sky island agency, you sell sky islands to customers.
 Be concise and formal in your response. You can and should use emojis
-to make the customer feel better. 
+to make the customer feel better. For information you don't have, make something up.
 
 Here's a list of the islands we have:
 

@@ -1,3 +1,5 @@
+"use client";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,13 +13,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import React from "react";
-import useAddTicket from "./hooks/useAddTicket";
 import { ReloadIcon } from "@radix-ui/react-icons";
 
 export default function NewTicketDialog() {
   const [input, setInput] = React.useState("");
-  const { isPending, mutateAsync, isSuccess } = useAddTicket();
   const [open, setOpen] = React.useState(false);
 
   const handleOpenChange = (open: boolean) => {
@@ -29,12 +28,6 @@ export default function NewTicketDialog() {
 
   const handleOnSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    /*  setOpen(false); */
-
-    await mutateAsync({
-      description: input,
-    });
 
     setOpen(false);
 
@@ -83,9 +76,8 @@ export default function NewTicketDialog() {
               type="button"
               variant="secondary"
               className="bg-indigo-500 text-white hover:bg-indigo-600"
-              disabled={isPending}
             >
-              {isPending || isSuccess ? (
+              {"" ? (
                 <>
                   <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
                   Please wait
