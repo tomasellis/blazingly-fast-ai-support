@@ -16,7 +16,6 @@ import useInfiniteChat from "./hooks/useInfiniteChat";
 
 function ChatInput(props: {
   ticketId: string;
-  handleNewChat?: (input: string) => Promise<void>;
   handleNewMessage: (input: string) => Promise<void>;
 }) {
   const [input, setInput] = React.useState("");
@@ -24,17 +23,14 @@ function ChatInput(props: {
   const formRef = React.useRef<HTMLFormElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
   const { data } = useInfiniteChat(props.ticketId);
+
+  
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const userInput = input.slice(0);
     setInput("");
-    if (props.handleNewChat) {
-      console.log("SETTING UP NEW CHAT");
-      await props.handleNewChat(userInput);
-    } else {
-      console.log("SENDING MESSAGE FROM CHATINPUT");
-      await props.handleNewMessage(userInput);
-    }
+    console.log("SENDING MESSAGE FROM CHATINPUT");
+    await props.handleNewMessage(userInput);
   };
 
   const handleKeyDown = (

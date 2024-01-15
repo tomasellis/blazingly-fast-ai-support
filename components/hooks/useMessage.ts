@@ -56,71 +56,18 @@ const useMessage = (ticket_id: string) => {
         ticket_id: ticket_id,
         timestamp: variables.timestamp,
       });
-      /* 
-      queryClient.setQueryData(
-        ["ticket", ticket_id],
-        (infinite_chat: InfiniteChat) => {
-          if (infinite_chat) {
-            return {
-              pages: [
-                ...infinite_chat.pages,
-                [
-                  {
-                    id: variables.id,
-                    content: variables.content,
-                    role: "user",
-                    ticket_id: ticket_id,
-                    timestamp: variables.timestamp,
-                  },
-                ],
-              ],
-              pageParams: [
-                ...infinite_chat.pageParams,
-                { type: "next", cursor: variables.timestamp },
-              ],
-            };
-          }
-        }
-      );
- */
-      return { variables };
-    },
-    onError: async (error, variables, context) => {
-      // An error happened!
-      console.log(
-        `rolling back optimistic update with id ${context?.variables.ticket_id}`,
-        error,
-        variables
-      );
-    },
-    onSuccess: async (data, variables, context) => {
-      /* queryClient.setQueryData(
-        ["ticket", variables.ticket_id],
-        (infinite_chat: InfiniteChat) => {
-          let nextInfinitePages = [...infinite_chat.pages];
-
-          let lastPage = nextInfinitePages.pop();
-
-          if (lastPage) {
-            lastPage.push({
-              id: data.added_message_ai[0].id,
-              content: data.added_message_ai[0].content,
-              role: "ai",
-              ticket_id: data.added_message_ai[0].ticket_id,
-              timestamp: data.added_message_ai[0].timestamp,
-              ticket: { id: variables.ticket_id },
-            });
-          }
-
-          return {
-            pages: [...nextInfinitePages],
-            pageParams: [...infinite_chat.pageParams],
-          };
-        }
-      );
-      return {}; */
       //await fetchPreviousPage();
+    },
+    onSuccess: async (data, variables) => {
       console.log("FETCHING NEXT PAGE");
+      await queryClient.cancelQueries({
+        queryKey: ["ticket", variables.ticket_id],
+      });
+      history.replaceState(
+        null,
+        "",
+        `/tickets/${data.added_message[0].ticket_id}`
+      );
       await fetchNextPage();
       setOptimisticMessage(null);
     },

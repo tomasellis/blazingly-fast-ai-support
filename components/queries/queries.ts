@@ -1,7 +1,7 @@
 "use server";
 import { db } from "@/db/db";
 import { message, ticket } from "@/db/schema";
-import { asc, desc } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 import { server_env } from "@/env";
 
 import { RemoteRunnable } from "langchain/runnables/remote";
@@ -31,8 +31,9 @@ export async function get_infinite_chat({
   ticket_id: string;
   pageParam: { cursor: Date; type: "prev" | "next" | string };
 }) {
+  await sleep(3000);
   console.log("Getting infinite ticket - ", pageParam);
-  const messageLimit = 4;
+  const messageLimit = 20;
   const messages = await db.query.message.findMany({
     where: (message, { eq, lt, and, gt }) => {
       if (pageParam.type === "init") {
@@ -52,23 +53,7 @@ export async function get_infinite_chat({
     limit: messageLimit,
   });
 
-  if (pageParam.type === "prev") {
-    if (messages.length < messageLimit) {
-      return { messages: messages, next: false };
-    } else {
-      return { messages: messages, next: true };
-    }
-  }
-
-  if (pageParam.type === "next") {
-    if (messages.length < messageLimit) {
-      return { messages: messages, next: false };
-    } else {
-      return { messages: messages, next: true };
-    }
-  }
-
-  return { messages, next: true };
+  return messages;
 }
 
 export async function get_tickets() {
@@ -94,6 +79,19 @@ export async function add_message({
 }) {
   console.log("Adding messages");
 
+  const exists = await db.query.ticket.findFirst({
+    where: (ticket, { eq }) => eq(ticket.id, ticket_id),
+  });
+
+  // TODO: generate title
+
+  if (!exists) {
+    await db.insert(ticket).values({
+      description: content,
+      id: ticket_id,
+    });
+  }
+
   const added_message = await db
     .insert(message)
     .values({
@@ -106,7 +104,8 @@ export async function add_message({
 
   console.log("Getting AI response - messages");
 
-  const { result } = await get_ai_response({ ticket_id });
+  /* const { result } = await get_ai_response({ ticket_id }); */
+  const result = "AI Response to user msg" + added_message[0].content;
   console.log("Adding AI response - messages");
 
   const added_message_ai = await db
@@ -118,8 +117,7 @@ export async function add_message({
     })
     .returning();
 
-  await sleep(2000);
-  return { added_message };
+  return { added_message, added_message_ai };
 }
 
 export async function add_ticket({

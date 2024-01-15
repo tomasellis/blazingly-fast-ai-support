@@ -110,7 +110,7 @@ const useAddTicket = (ticket_id: string) => {
     onSuccess: async (data, variables, context) => {
       /* queryClient.fetchQuery({ queryKey: ["ticket", variables.id] }); */
       console.log("Fetching on success ticket");
-      history.replaceState(null, "", `/tickets/${data.added_ticket[0].id}`);
+      
 
       await queryClient.refetchQueries({
         queryKey: ["ticket", data.added_ticket[0].id],

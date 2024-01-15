@@ -1,5 +1,5 @@
 "use client";
-import React, { useContext } from "react";
+import React, { LegacyRef, useContext, useRef } from "react";
 import ChatInput from "@/components/chatinput";
 import { nanoid } from "nanoid";
 import Message from "@/components/message";
@@ -8,13 +8,18 @@ import FakeMessage from "@/components/fakemessage";
 import useMessage from "@/components/hooks/useMessage";
 import useInfiniteChat from "@/components/hooks/useInfiniteChat";
 import useAddTicket from "@/components/hooks/useAddTicket";
+import useIsOnscreen from "@/components/hooks/useIsOnScreen";
+import { ReloadIcon } from "@radix-ui/react-icons";
 
 export default function Chatbox({ params }: { params: { ticket_id: string } }) {
   const scrollerRef = React.useRef<HTMLDivElement>(null);
   const [ticketId, setTicketId] = React.useState(params.ticket_id);
-  const { newChatMut, newChatOptimisticMessage } = useAddTicket(ticketId);
 
-  const { mutateAsync: asyncMutateTicket } = newChatMut;
+  const fetchRef = useRef(null);
+
+  const isFetcherOnScreen = useIsOnscreen(fetchRef);
+
+  const newMessagesRef = useRef(null);
 
   const { messageMut, optimisticMessage } = useMessage(ticketId);
 
@@ -42,26 +47,50 @@ export default function Chatbox({ params }: { params: { ticket_id: string } }) {
     });
   };
 
+  React.useEffect(() => {
+    (async () => {
+      console.log("ref", isFetcherOnScreen);
+      if (isFetcherOnScreen && !isFetchingPreviousPage) {
+        await fetchPreviousPage();
+        window.moveBy(0, 200);
+        const newChat = newMessagesRef.current
+          ? (newMessagesRef.current as HTMLDivElement)
+          : null;
+        if (newChat) newChat.scrollIntoView({ behavior: "instant" });
+      }
+    })();
+  }, [isFetcherOnScreen, isFetchingPreviousPage]);
+
   return (
     <div className="h-full w-full flex flex-col no-scrollbar">
       <div
         ref={scrollerRef}
         className="h-full no-scrollbar overflow-auto p-4 space-y-4"
       >
-        <button
-          onClick={() => fetchPreviousPage()}
-          disabled={!hasPreviousPage || isFetchingPreviousPage}
-        >
-          {isFetchingPreviousPage
-            ? "Loading more..."
-            : hasPreviousPage
-            ? "Load More"
-            : "Nothing more to load"}
-        </button>
+        <div className="flex justify-center" ref={fetchRef}>
+          {isFetchingPreviousPage || isFetching ? (
+            "Loading more..."
+          ) : hasPreviousPage ? (
+            <button onClick={async () => await fetchPreviousPage()}>
+              Load More
+            </button>
+          ) : (
+            "Nothing more to load"
+          )}
+        </div>
+        {isFetchingPreviousPage && (
+          <div className="flex justify-center">
+            <ReloadIcon className="h-8 w-8 animate-spin" />
+          </div>
+        )}
         {data?.pages.map((messages, i) => (
-          <div key={i} className="border-2 bg-red-500">
-            {messages.messages.length > 0
-              ? messages.messages
+          <div
+            ref={i === 1 && hasPreviousPage ? newMessagesRef : null}
+            key={i}
+            className=""
+          >
+            {messages.length > 0
+              ? messages
                   .toReversed()
                   .map((message) => (
                     <Message last={false} message={message} key={message.id} />
@@ -75,13 +104,8 @@ export default function Chatbox({ params }: { params: { ticket_id: string } }) {
             <FakeMessage />
           </>
         ) : null}
-        {newChatOptimisticMessage ? (
-          <>
-            <Message message={newChatOptimisticMessage} last={false} />
-            <FakeMessage />
-          </>
-        ) : null}
-        <button
+
+        {/* <button
           onClick={() => fetchNextPage()}
           disabled={!hasNextPage || isFetchingNextPage}
         >
@@ -91,7 +115,7 @@ export default function Chatbox({ params }: { params: { ticket_id: string } }) {
             ? "Load More"
             : "Nothing more to load"}
         </button>
-        <div>{isFetching && !isFetchingNextPage ? "Fetching..." : null}</div>
+        <div>{isFetching && !isFetchingNextPage ? "Fetching..." : null}</div> */}
       </div>
 
       {/* <div

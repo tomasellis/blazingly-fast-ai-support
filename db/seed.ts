@@ -4,37 +4,31 @@ import { message, ticket } from "./schema";
 
 (async function seed() {
   await db.transaction(async (tx) => {
-    const first_ticket = nanoid();
+    const first_ticket = "aca";
     const second_ticket = nanoid();
 
-    Array(10).map((_, index) =>{
-      await tx
+    await tx
       .insert(ticket)
       .values([{ id: first_ticket, status: false, description: "Help pls" }]);
-      
-      await tx.insert(message).values([
-        {
-          content: index,
-          ticket_id: first_ticket,
-          role: "ai",
-        },
-      ]);
-    })
 
-    
+    const msgs = Array.from({ length: 200 }, (_, i) => {
+      return {
+        content: i.toString(),
+        ticket_id: first_ticket,
+        role: i % 2 === 0 ? ("user" as const) : ("ai" as const),
+        timestamp: new Date(2024, 0, 1, 0, i),
+      };
+    });
+
+    for (const msg of msgs) {
+      await tx.insert(message).values(msg);
+    }
+
     await tx
       .insert(ticket)
       .values([
         { id: second_ticket, status: false, description: "Someone help" },
       ]);
-
-    await tx.insert(message).values([
-      {
-        content: "Sup' boss, what needs helping?",
-        ticket_id: first_ticket,
-        role: "ai",
-      },
-    ]);
 
     await tx.insert(message).values([
       {

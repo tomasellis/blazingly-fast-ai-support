@@ -7,17 +7,14 @@ import FakeMessage from "@/components/fakemessage";
 import useMessage from "@/components/hooks/useMessage";
 import useInfiniteChat from "@/components/hooks/useInfiniteChat";
 import useAddTicket from "@/components/hooks/useAddTicket";
+import { ReloadIcon } from "@radix-ui/react-icons";
 
 export default function Chatbox() {
   const scrollerRef = React.useRef<HTMLDivElement>(null);
   const [ticketId, setTicketId] = React.useState(nanoid());
-
-  const { newChatMut, newChatOptimisticMessage } = useAddTicket(ticketId);
-
-  const { mutateAsync: asyncMutateTicket } = newChatMut;
+  console.log("ticket id", ticketId);
 
   const { messageMut, optimisticMessage } = useMessage(ticketId);
-
   const { mutateAsync: asyncMutateMessage } = messageMut;
 
   const {
@@ -31,7 +28,7 @@ export default function Chatbox() {
     isFetchingPreviousPage,
   } = useInfiniteChat(ticketId);
 
-  const handleNewChat = async (input: string) => {
+  /*  const handleNewChat = async (input: string) => {
     await asyncMutateTicket({
       description: input,
       first_message: {
@@ -40,7 +37,7 @@ export default function Chatbox() {
         id: nanoid(),
       },
     });
-  };
+  }; */
 
   const handleNewMessage = async (input: string) => {
     console.log("sending new message", { ticketId });
@@ -68,10 +65,16 @@ export default function Chatbox() {
             ? "Load More"
             : "Nothing more to load"}
         </button>
-        {data?.pages.map((messages, i) => (
+        {data?.pages.map((page, i) => (
           <div key={i} className="border-2 bg-red-500">
-            {messages.messages.length > 0
-              ? messages.messages
+            {isFetchingPreviousPage && (
+              <div className="flex justify-center">
+                <ReloadIcon className="h-8 w-8 animate-spin" />
+              </div>
+            )}
+
+            {page.length > 0
+              ? page
                   .toReversed()
                   .map((message) => (
                     <Message last={false} message={message} key={message.id} />
@@ -82,12 +85,6 @@ export default function Chatbox() {
         {optimisticMessage ? (
           <>
             <Message message={optimisticMessage} last={false} />
-            <FakeMessage />
-          </>
-        ) : null}
-        {newChatOptimisticMessage ? (
-          <>
-            <Message message={newChatOptimisticMessage} last={false} />
             <FakeMessage />
           </>
         ) : null}
@@ -104,11 +101,7 @@ export default function Chatbox() {
         <div>{isFetching && !isFetchingNextPage ? "Fetching..." : null}</div>
       </div>
 
-      <ChatInput
-        ticketId={ticketId}
-        handleNewChat={handleNewChat}
-        handleNewMessage={handleNewMessage}
-      />
+      <ChatInput ticketId={ticketId} handleNewMessage={handleNewMessage} />
     </div>
   );
 }
