@@ -2,10 +2,7 @@
 import React from "react";
 import { useTickets } from "./hooks/useTickets";
 import TicketTab from "./tickettab";
-import { usePathname } from "next/navigation";
-import Link from "next/link";
 import NewTicketTab from "./newtickettab";
-import useTicket from "./hooks/useTicket";
 
 export default function TicketsBox() {
   const { data, isFetching } = useTickets();
@@ -24,7 +21,7 @@ export default function TicketsBox() {
           <div className="mt-4 text-sm text-gray-500">
             <span>Previous tickets</span>
           </div>
-          {!data && (
+          {!isFetching && !data && (
             <p className="text-lg">
               No tickets available. Please start a new chat.
             </p>

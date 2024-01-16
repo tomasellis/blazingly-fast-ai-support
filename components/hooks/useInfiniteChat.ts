@@ -9,8 +9,6 @@ import { usePathname } from "next/navigation";
 const useInfiniteChat = (ticket_id: string) => {
   const path = usePathname();
 
-  console.log({ path });
-
   return useInfiniteQuery({
     enabled: path !== "/tickets",
     queryKey: ["ticket", ticket_id],

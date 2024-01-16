@@ -16,7 +16,6 @@ export default function Chatbox({ params }: { params: { ticket_id: string } }) {
   const [ticketId, setTicketId] = React.useState(params.ticket_id);
   const { setId } = useContext(TicketIdContext);
   // Save current id
-  setId(ticketId);
 
   const fetchRef = useRef(null);
 
@@ -33,10 +32,7 @@ export default function Chatbox({ params }: { params: { ticket_id: string } }) {
     data,
     fetchPreviousPage,
     hasPreviousPage,
-    hasNextPage,
     isFetching,
-    fetchNextPage,
-    isFetchingNextPage,
     isFetchingPreviousPage,
   } = useInfiniteChat(ticketId);
 
@@ -54,15 +50,17 @@ export default function Chatbox({ params }: { params: { ticket_id: string } }) {
     (async () => {
       if (isFetcherOnScreen && !isFetchingPreviousPage) {
         await fetchPreviousPage();
-        window.moveBy(0, 200);
         const newChat = newMessagesRef.current
           ? (newMessagesRef.current as HTMLDivElement)
           : null;
         if (newChat) newChat.scrollIntoView({ behavior: "instant" });
       }
     })();
-  }, [isFetcherOnScreen, isFetchingPreviousPage]);
+  }, [isFetcherOnScreen, isFetchingPreviousPage, fetchPreviousPage]);
 
+  React.useEffect(() => {
+    setId(ticketId);
+  }, [ticketId, setId]);
   return (
     <div className="h-full w-full flex flex-col no-scrollbar">
       <div
@@ -79,7 +77,7 @@ export default function Chatbox({ params }: { params: { ticket_id: string } }) {
           ) : data?.pages[0].length === 0 && data.pages.length === 1 ? (
             "This chat is empty. Send a message to start."
           ) : (
-            "Nothing more to load"
+            "Nothing else to load."
           )}
         </div>
         {isFetchingPreviousPage && (

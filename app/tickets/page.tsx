@@ -32,7 +32,7 @@ export default function Chatbox() {
 
   React.useEffect(() => {
     setId(ticketId);
-  }, [ticketId]);
+  }, [ticketId, setId]);
 
   React.useEffect(() => {
     console.log({ data });

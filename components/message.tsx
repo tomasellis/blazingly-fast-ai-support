@@ -32,13 +32,13 @@ export default function Message({
         className="flex items-end justify-start"
         id={last ? "last" : ""}
       >
-        <div className="flex flex-col space-y-1  max-w-xs">
+        <div className="flex flex-col space-y-1  max-w-md">
           <p className="text-sm text-gray-400 text-start">
             Customer Service • {dateFormatter.format(message.timestamp)}
           </p>
-          <span className="px-4 py-2 rounded-lg bg-gray-700 text-white">
-            <span className="">{message.content}</span>
-          </span>
+          <div className="px-4 py-2 rounded-lg bg-gray-700 text-white whitespace-normal break-words">
+            {message.content}
+          </div>
         </div>
       </div>
     );
@@ -49,13 +49,13 @@ export default function Message({
       key={message.id}
       className="flex items-end justify-end"
     >
-      <div className="flex flex-col space-y-1  max-w-xs">
+      <div className="flex flex-col space-y-1  max-w-md">
         <p className="text-sm text-gray-400 text-end">
           You • {dateFormatter.format(message.timestamp)}
         </p>
-        <p className="px-4 py-2 rounded-lg bg-indigo-500 text-gray-300 text-left">
+        <div className="px-4 py-2 rounded-lg bg-indigo-500 text-gray-300 text-left whitespace-normal break-words">
           {message.content}
-        </p>
+        </div>
       </div>
     </div>
   );

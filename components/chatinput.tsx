@@ -36,6 +36,7 @@ function ChatInput(props: {
     event: React.KeyboardEvent<HTMLTextAreaElement>
   ): void => {
     if (
+      props.ticketId !== "" &&
       !isFetching &&
       event.key === "Enter" &&
       !event.shiftKey &&

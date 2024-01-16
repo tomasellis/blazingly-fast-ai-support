@@ -7,14 +7,12 @@ import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
 
 export default function NewTicketTab(props: { disabled: boolean }) {
-  const router = useRouter();
-
   return (
     <button
       onClick={() => {
-        console.log("next pageee");
-        return router.refresh();
+        window.location.href = "/tickets";
       }}
+      className="w-full"
     >
       <div
         className={cx(
