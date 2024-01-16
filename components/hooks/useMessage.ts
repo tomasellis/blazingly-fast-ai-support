@@ -43,7 +43,7 @@ const useMessage = (ticket_id: string) => {
         id,
       });
     },
-    mutationKey: ["message", ticket_id, "chat"],
+    mutationKey: ["message", ticket_id],
     onMutate: async (variables) => {
       await queryClient.cancelQueries({
         queryKey: ["ticket", variables.ticket_id],
@@ -59,8 +59,9 @@ const useMessage = (ticket_id: string) => {
       //await fetchPreviousPage();
     },
     onSuccess: async (data, variables) => {
+      console.log(data.added_message, data.added_message_ai);
       console.log("FETCHING NEXT PAGE");
-      await queryClient.cancelQueries({
+      await queryClient.invalidateQueries({
         queryKey: ["ticket", variables.ticket_id],
       });
       history.replaceState(
@@ -74,7 +75,7 @@ const useMessage = (ticket_id: string) => {
     onSettled: async (data, error, variables, context) => {
       // Error or success... doesn't matter!
       //console.log("got it!", { response: data?.data.aiResponse.data });
-      await queryClient.invalidateQueries({
+      await queryClient.refetchQueries({
         queryKey: ["tickets"],
       });
     },

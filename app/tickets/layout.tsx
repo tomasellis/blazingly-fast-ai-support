@@ -6,9 +6,9 @@ import { nanoid } from "ai";
 import { string } from "valibot";
 import Link from "next/link";
 
-export const ChatContext = React.createContext({
-  id: nanoid(),
-  newId: () => {},
+export const TicketIdContext = React.createContext({
+  id: "",
+  setId: (id: string) => {},
 });
 
 export default function TicketsLayout({
@@ -16,11 +16,7 @@ export default function TicketsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [id, setId] = React.useState(nanoid());
-
-  const newId = () => {
-    setId(nanoid());
-  };
+  const [id, setId] = React.useState("");
 
   return (
     <div className=" h-full flex flex-col bg-gray-900 overflow-y-auto text-white dark ">
@@ -30,8 +26,10 @@ export default function TicketsLayout({
         </Link>
       </div>
       <div className="flex-1 flex h-full w-full overflow-auto">
-        <TicketsBox />
-        <div className="flex-1 flex flex-col">{children}</div>
+        <TicketIdContext.Provider value={{ id, setId }}>
+          <TicketsBox />
+          <div className="flex-1 flex flex-col">{children}</div>
+        </TicketIdContext.Provider>
       </div>
     </div>
   );

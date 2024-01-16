@@ -19,12 +19,11 @@ function ChatInput(props: {
   handleNewMessage: (input: string) => Promise<void>;
 }) {
   const [input, setInput] = React.useState("");
-  const path = usePathname().split("/");
+  const path = usePathname();
   const formRef = React.useRef<HTMLFormElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-  const { data } = useInfiniteChat(props.ticketId);
+  const { data, isFetching } = useInfiniteChat(props.ticketId);
 
-  
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const userInput = input.slice(0);
@@ -37,6 +36,7 @@ function ChatInput(props: {
     event: React.KeyboardEvent<HTMLTextAreaElement>
   ): void => {
     if (
+      !isFetching &&
       event.key === "Enter" &&
       !event.shiftKey &&
       !event.nativeEvent.isComposing
@@ -66,7 +66,11 @@ function ChatInput(props: {
         }}
         className="max-h-[140px] min-h-[25px] outline-none p-2 mr-5 flex-1 
         h-full rounded-sm w-full box-border bg-gray-700 text-gray-300"
-        placeholder={"Message Customer Support..."}
+        placeholder={
+          path === "/tickets"
+            ? "Send a message to reach Customer Support..."
+            : "Message Customer Support..."
+        }
         maxRows={5}
         minRows={1}
         maxLength={500}
@@ -81,7 +85,7 @@ function ChatInput(props: {
         variant="default"
         size="icon"
         className=" rounded-full bg-indigo-500 text-white hover:bg-indigo-600 transition duration-200 ease-in-out transform hover:scale-105"
-        /*  disabled={!!!ticketId} */
+        disabled={isFetching}
         type="submit"
       >
         <PaperPlaneIcon className=" bottom-0 right-0 h-6 w-6 -rotate-90" />

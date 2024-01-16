@@ -53,6 +53,8 @@ export async function get_infinite_chat({
     limit: messageLimit,
   });
 
+  console.log("RESULT OF INFINITE CHAT", pageParam.cursor, { messages });
+
   return messages;
 }
 
@@ -83,13 +85,16 @@ export async function add_message({
     where: (ticket, { eq }) => eq(ticket.id, ticket_id),
   });
 
+  console.log({ exists });
   // TODO: generate title
 
-  if (!exists) {
-    await db.insert(ticket).values({
+  if (exists === undefined) {
+    console.log("doesnt exist, lets create");
+    const newTicket = await db.insert(ticket).values({
       description: content,
       id: ticket_id,
     });
+    console.log({ newTicket });
   }
 
   const added_message = await db
@@ -99,13 +104,14 @@ export async function add_message({
       ticket_id,
       timestamp,
       id,
+      role: "user",
     })
     .returning();
 
   console.log("Getting AI response - messages");
 
   /* const { result } = await get_ai_response({ ticket_id }); */
-  const result = "AI Response to user msg" + added_message[0].content;
+  const result = "AI Response to user msg: " + added_message[0].content;
   console.log("Adding AI response - messages");
 
   const added_message_ai = await db

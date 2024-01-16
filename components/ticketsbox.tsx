@@ -1,24 +1,14 @@
 "use client";
 import React from "react";
-import Loading from "@/app/tickets/loading";
 import { useTickets } from "./hooks/useTickets";
 import TicketTab from "./tickettab";
 import { usePathname } from "next/navigation";
-import NewTicketDialog from "./newticketdialog";
-import { useRouter } from "next/navigation";
-import FakeTicketTab from "./faketickettab";
+import Link from "next/link";
+import NewTicketTab from "./newtickettab";
+import useTicket from "./hooks/useTicket";
 
 export default function TicketsBox() {
-  const isActive = usePathname();
-  const { data, isLoading, isFetching, isError } = useTickets();
-  const [selectedId, setSelectedId] = React.useState(
-    isActive ? "" : isActive.split("/")[2]
-  );
-
-  const handleClickTicket = (id: string) => {
-    setSelectedId(id);
-  };
-
+  const { data, isFetching } = useTickets();
   /*   if (isError) return <div>Failed getting Tickets</div>; */
 
   return (
@@ -29,23 +19,21 @@ export default function TicketsBox() {
       <div className="flex-1 flex flex-col w-full bg-gray-900 overflow-auto">
         <div className="flex-auto h-[200px] overflow-y-auto no-scrollbar p-4 space-y-4">
           <div className="flex h-[10%] justify-center items-center">
-            {<NewTicketDialog />}
+            <NewTicketTab disabled={isFetching} />
+          </div>
+          <div className="mt-4 text-sm text-gray-500">
+            <span>Previous tickets</span>
           </div>
           {!data && (
             <p className="text-lg">
-              No tickets available. Please add a new ticket.
+              No tickets available. Please start a new chat.
             </p>
           )}
           <ul>
             {data &&
               data.map((ticket, pageIndex) => (
                 <li key={ticket.id}>
-                  <TicketTab
-                    key={ticket.id}
-                    ticket={ticket}
-                    handleClick={handleClickTicket}
-                    currentTicketId={selectedId}
-                  />
+                  <TicketTab key={ticket.id} ticket={ticket} />
                 </li>
               ))}
           </ul>

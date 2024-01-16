@@ -3,7 +3,7 @@ import React, { LegacyRef, useContext, useRef } from "react";
 import ChatInput from "@/components/chatinput";
 import { nanoid } from "nanoid";
 import Message from "@/components/message";
-import { ChatContext } from "../layout";
+import { TicketIdContext } from "../layout";
 import FakeMessage from "@/components/fakemessage";
 import useMessage from "@/components/hooks/useMessage";
 import useInfiniteChat from "@/components/hooks/useInfiniteChat";
@@ -14,6 +14,9 @@ import { ReloadIcon } from "@radix-ui/react-icons";
 export default function Chatbox({ params }: { params: { ticket_id: string } }) {
   const scrollerRef = React.useRef<HTMLDivElement>(null);
   const [ticketId, setTicketId] = React.useState(params.ticket_id);
+  const { setId } = useContext(TicketIdContext);
+  // Save current id
+  setId(ticketId);
 
   const fetchRef = useRef(null);
 
@@ -49,7 +52,6 @@ export default function Chatbox({ params }: { params: { ticket_id: string } }) {
 
   React.useEffect(() => {
     (async () => {
-      console.log("ref", isFetcherOnScreen);
       if (isFetcherOnScreen && !isFetchingPreviousPage) {
         await fetchPreviousPage();
         window.moveBy(0, 200);
@@ -69,11 +71,13 @@ export default function Chatbox({ params }: { params: { ticket_id: string } }) {
       >
         <div className="flex justify-center" ref={fetchRef}>
           {isFetchingPreviousPage || isFetching ? (
-            "Loading more..."
+            "Loading chat..."
           ) : hasPreviousPage ? (
             <button onClick={async () => await fetchPreviousPage()}>
               Load More
             </button>
+          ) : data?.pages[0].length === 0 && data.pages.length === 1 ? (
+            "This chat is empty. Send a message to start."
           ) : (
             "Nothing more to load"
           )}
