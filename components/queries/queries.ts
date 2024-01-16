@@ -110,8 +110,8 @@ export async function add_message({
 
   console.log("Getting AI response - messages");
 
-  /* const { result } = await get_ai_response({ ticket_id }); */
-  const result = "AI Response to user msg: " + added_message[0].content;
+  const { result } = await get_ai_response({ ticket_id });
+  /* const result = "AI Response to user msg: " + added_message[0].content; */
   console.log("Adding AI response - messages");
 
   const added_message_ai = await db
