@@ -1,6 +1,4 @@
 "use server";
-export const runtime = "edge"; // 'nodejs' is the default
-
 import { db } from "@/db/db";
 import { message, ticket } from "@/db/schema";
 import { asc, desc, eq } from "drizzle-orm";
