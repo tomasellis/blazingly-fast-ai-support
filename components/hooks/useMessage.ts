@@ -1,25 +1,20 @@
 "use client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { add_message, get_infinite_chat, get_ticket } from "../queries/queries";
+import {
+  InfiniteData,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { add_message, get_infinite_chat } from "../queries/queries";
 import useInfiniteChat from "./useInfiniteChat";
 import React from "react";
+import { usePathname, useRouter } from "next/navigation";
 
-type InfiniteChatMessages = Awaited<ReturnType<typeof get_infinite_chat>>;
-type InfiniteChat = {
-  pages: InfiniteChatMessages[];
-  pageParams: Date[];
-};
-type Message = {
-  id: string;
-  timestamp: Date;
-  ticket_id: string;
-  content: string;
-  role: "ai" | "user" | null;
-};
-
-const useMessage = (ticket_id: string) => {
+const useMessage = (ticket_id: string, initial_data: InfiniteData<Message[], MessageParams>) => {
   const queryClient = useQueryClient();
-  const { fetchNextPage, fetchPreviousPage } = useInfiniteChat(ticket_id);
+  const { fetchNextPage, fetchPreviousPage } = useInfiniteChat(ticket_id, initial_data);
+
+  const router = useRouter();
+  const path = usePathname();
 
   const [optimisticMessage, setOptimisticMessage] =
     React.useState<Message | null>(null);
@@ -64,12 +59,17 @@ const useMessage = (ticket_id: string) => {
       await queryClient.invalidateQueries({
         queryKey: ["ticket", variables.ticket_id],
       });
-      history.replaceState(
+
+      /* history.replaceState(
         null,
         "",
         `/tickets/${data.added_message[0].ticket_id}`
       );
+       */
       await fetchNextPage();
+      if (path === "/tickets") {
+        router.push(`/tickets/${data.added_message[0].ticket_id}`);
+      }
       setOptimisticMessage(null);
     },
     onSettled: async (data, error, variables, context) => {
@@ -85,3 +85,22 @@ const useMessage = (ticket_id: string) => {
 };
 
 export default useMessage;
+
+type Message = {
+  id: string;
+  role: "ai" | "user" | null;
+  content: string;
+  ticket_id: string;
+  timestamp: Date;
+};
+
+type MessageParams = {
+  cursor: Date;
+  type: string;
+};
+
+type InfiniteChatMessages = Awaited<ReturnType<typeof get_infinite_chat>>;
+type InfiniteChat = {
+  pages: InfiniteChatMessages[];
+  pageParams: Date[];
+};

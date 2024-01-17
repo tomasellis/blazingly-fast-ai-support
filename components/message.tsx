@@ -16,14 +16,6 @@ export default function Message({
 }) {
   const messageRef = React.useRef<HTMLDivElement>(null);
 
-  /* React.useEffect(() => {
-    if (last && messageRef.current) {
-      messageRef.current.scrollIntoView({
-        behavior: "smooth",
-      });
-    }
-  }, []); */
-
   if (message.role === "ai") {
     return (
       <div
@@ -34,7 +26,8 @@ export default function Message({
       >
         <div className="flex flex-col space-y-1  max-w-md">
           <p className="text-sm text-gray-400 text-start">
-            Customer Service • {dateFormatter.format(message.timestamp)}
+            Customer Service •{" "}
+            {dateFormatter.format(new Date(message.timestamp))}
           </p>
           <div className="px-4 py-2 rounded-lg bg-gray-700 text-white whitespace-normal break-words">
             {message.content}
@@ -43,6 +36,7 @@ export default function Message({
       </div>
     );
   }
+
   return (
     <div
       ref={messageRef}
@@ -51,7 +45,7 @@ export default function Message({
     >
       <div className="flex flex-col space-y-1  max-w-md">
         <p className="text-sm text-gray-400 text-end">
-          You • {dateFormatter.format(message.timestamp)}
+          You • {dateFormatter.format(new Date(message.timestamp))}
         </p>
         <div className="px-4 py-2 rounded-lg bg-indigo-500 text-gray-300 text-left whitespace-normal break-words">
           {message.content}

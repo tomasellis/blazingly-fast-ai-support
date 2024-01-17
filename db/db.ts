@@ -8,4 +8,4 @@ export const client = createClient({
   authToken: server_env.DATABASE_AUTH_TOKEN,
 });
 
-export const db = drizzle(client, { schema });
+export const db = drizzle(client, { schema, logger: true });

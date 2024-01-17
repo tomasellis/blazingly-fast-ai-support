@@ -29,25 +29,30 @@ export async function get_infinite_chat({
   ticket_id,
 }: {
   ticket_id: string;
-  pageParam: { cursor: Date; type: "prev" | "next" | string };
+  pageParam: { cursor: Date | string; type: "prev" | "next" | string };
 }) {
   await sleep(3000);
   console.log("Getting infinite ticket - ", pageParam);
+  const date =
+    typeof pageParam.cursor === "string"
+      ? new Date(Date.parse(pageParam.cursor))
+      : pageParam.cursor;
   const messageLimit = 20;
   const messages = await db.query.message.findMany({
     where: (message, { eq, lt, and, gt }) => {
-      if (pageParam.type === "init") {
-        return eq(message.ticket_id, ticket_id);
-      } else if (pageParam.type === "prev") {
+      if (pageParam.type === "prev") {
+        console.log("prev---------------------->>>>");
         return and(
           eq(message.ticket_id, ticket_id),
-          lt(message.timestamp, pageParam.cursor)
+          lt(message.timestamp, date)
+        );
+      } else {
+        console.log("next------------------------>>>>");
+        return and(
+          eq(message.ticket_id, ticket_id),
+          gt(message.timestamp, date)
         );
       }
-      return and(
-        eq(message.ticket_id, ticket_id),
-        gt(message.timestamp, pageParam.cursor)
-      );
     },
     orderBy: desc(message.timestamp),
     limit: messageLimit,

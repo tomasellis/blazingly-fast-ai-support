@@ -9,16 +9,19 @@ import useInfiniteChat from "@/components/hooks/useInfiniteChat";
 import useAddTicket from "@/components/hooks/useAddTicket";
 import { ReloadIcon } from "@radix-ui/react-icons";
 import { TicketIdContext } from "./layout";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 export default function Chatbox() {
+  const initial_data = { pages: [], pageParams: [] };
+
   const scrollerRef = React.useRef<HTMLDivElement>(null);
-  const [ticketId, setTicketId] = React.useState(nanoid());
+  const [ticketId, setTicketId] = React.useState("");
   const [sentFirstMessage, setSentFirstMessage] = React.useState(false);
-  const { messageMut, optimisticMessage } = useMessage(ticketId);
+  const { messageMut, optimisticMessage } = useMessage(ticketId, initial_data);
   const { mutateAsync: asyncMutateMessage } = messageMut;
   const { setId, id } = useContext(TicketIdContext);
-  const { data } = useInfiniteChat(ticketId);
+  const { data } = useInfiniteChat(ticketId, initial_data);
+  const path = usePathname();
 
   const handleNewMessage = async (input: string) => {
     setSentFirstMessage(true);
@@ -31,12 +34,10 @@ export default function Chatbox() {
   };
 
   React.useEffect(() => {
-    setId(ticketId);
-  }, [ticketId, setId]);
-
-  React.useEffect(() => {
-    console.log({ data });
-  }, [data]);
+    const newId = nanoid();
+    setTicketId(newId);
+    setId(newId);
+  }, [path]);
 
   return (
     <div className="h-full w-full flex flex-col no-scrollbar">
@@ -57,17 +58,20 @@ export default function Chatbox() {
             </div>
           </div>
         )}
-        {data?.pages.map((page, i) => {
-          if (page.length >= 1) {
-            return (
-              <div key={i} className="">
-                {page.toReversed().map((message) => (
-                  <Message last={false} message={message} key={message.id} />
-                ))}
-              </div>
-            );
-          }
-        })}
+        {data?.pages.some((p) =>
+          p.some((messages) => messages.ticket_id === ticketId)
+        ) &&
+          data?.pages.map((page, i) => {
+            if (page.length >= 1) {
+              return (
+                <div key={i} className="">
+                  {page.toReversed().map((message) => (
+                    <Message last={false} message={message} key={message.id} />
+                  ))}
+                </div>
+              );
+            }
+          })}
         {optimisticMessage ? (
           <>
             <Message message={optimisticMessage} last={false} />
@@ -75,7 +79,11 @@ export default function Chatbox() {
           </>
         ) : null}
       </div>
-      <ChatInput ticketId={ticketId} handleNewMessage={handleNewMessage} />
+      <ChatInput
+        ticketId={ticketId}
+        handleNewMessage={handleNewMessage}
+        initialData={initial_data}
+      />
     </div>
   );
 }

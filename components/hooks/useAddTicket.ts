@@ -25,7 +25,7 @@ const useAddTicket = (ticket_id: string) => {
   const [newChatOptimisticMessage, setNewChatOptimisticMessage] =
     React.useState<Message | null>(null);
   const queryClient = useQueryClient();
-  const { fetchPreviousPage, fetchNextPage } = useInfiniteChat(ticket_id);
+  const { fetchPreviousPage, fetchNextPage } = useInfiniteChat(ticket_id, );
   const newChatMut = useMutation({
     mutationFn: ({
       description,

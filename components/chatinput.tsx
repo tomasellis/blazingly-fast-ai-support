@@ -13,16 +13,21 @@ import {
 import { nanoid } from "nanoid";
 import useTicket from "./hooks/useTicket";
 import useInfiniteChat from "./hooks/useInfiniteChat";
+import { InfiniteData } from "@tanstack/react-query";
 
 function ChatInput(props: {
   ticketId: string;
   handleNewMessage: (input: string) => Promise<void>;
+  initialData: InfiniteData<Message[], MessageParams>;
 }) {
   const [input, setInput] = React.useState("");
   const path = usePathname();
   const formRef = React.useRef<HTMLFormElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-  const { data, isFetching } = useInfiniteChat(props.ticketId);
+  const { data, isFetching } = useInfiniteChat(
+    props.ticketId,
+    props.initialData
+  );
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -96,3 +101,16 @@ function ChatInput(props: {
 }
 
 export default React.memo(ChatInput);
+
+type Message = {
+  id: string;
+  role: "ai" | "user" | null;
+  content: string;
+  ticket_id: string;
+  timestamp: Date;
+};
+
+type MessageParams = {
+  cursor: Date;
+  type: string;
+};

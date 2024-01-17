@@ -13,13 +13,7 @@ export default function TicketTab(props: {
     timestamp: Date;
   };
 }) {
-  const path = usePathname();
   const { id } = useContext(TicketIdContext);
-  const { data } = useTickets();
-
-  React.useEffect(() => {
-    console.log("Got new id", { id });
-  }, [id]);
 
   return (
     <Link href={`/tickets/${props.ticket.id}`} className={``} draggable={false}>
