@@ -9,7 +9,9 @@ import { message, ticket } from "./schema";
 
     await tx
       .insert(ticket)
-      .values([{ id: first_ticket, status: false, description: "Help pls" }]);
+      .values([
+        { id: first_ticket, status: false, description: "Assistance Needed." },
+      ]);
 
     const msgs = Array.from({ length: 200 }, (_, i) => {
       return {
@@ -26,9 +28,7 @@ import { message, ticket } from "./schema";
 
     await tx
       .insert(ticket)
-      .values([
-        { id: second_ticket, status: false, description: "Someone help" },
-      ]);
+      .values([{ id: second_ticket, status: false, description: "How do I?" }]);
 
     await tx.insert(message).values([
       {

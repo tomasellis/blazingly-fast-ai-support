@@ -1,4 +1,6 @@
 "use server";
+export const runtime = "edge"; // 'nodejs' is the default
+
 import { db } from "@/db/db";
 import { message, ticket } from "@/db/schema";
 import { asc, desc, eq } from "drizzle-orm";
@@ -79,11 +81,16 @@ export async function add_message({
   timestamp: Date;
   id: string;
 }) {
+  const start = Date.now();
+
   console.log("Adding messages");
 
   const exists = await db.query.ticket.findFirst({
     where: (ticket, { eq }) => eq(ticket.id, ticket_id),
   });
+  console.log(
+    `Execution time: CHECK IF TICKET EXISTS - ${Date.now() - start} ms`
+  );
 
   console.log({ exists });
   // TODO: generate title
@@ -95,6 +102,7 @@ export async function add_message({
       id: ticket_id,
     });
     console.log({ newTicket });
+    console.log(`Execution time: ADD NEW TICKET - ${Date.now() - start} ms`);
   }
 
   const added_message = await db
@@ -108,10 +116,13 @@ export async function add_message({
     })
     .returning();
 
+  console.log(`Execution time: ADD NEW MESSAGE - ${Date.now() - start} ms`);
   console.log("Getting AI response - messages");
 
   const { result } = await get_ai_response({ ticket_id });
   /* const result = "AI Response to user msg: " + added_message[0].content; */
+  console.log(`Execution time: GET AI RESPONSE - ${Date.now() - start} ms`);
+
   console.log("Adding AI response - messages");
 
   const added_message_ai = await db
@@ -122,6 +133,10 @@ export async function add_message({
       role: "ai",
     })
     .returning();
+
+  console.log(
+    `Execution time: ADD AI MESSAGE TO DB - ${Date.now() - start} ms`
+  );
 
   return { added_message, added_message_ai };
 }
@@ -208,6 +223,7 @@ AI: `;
     let result = (await chain.invoke({
       input: INPUT,
     })) as string;
+
     console.log("RESULT_>_>_", result);
 
     console.log({ result });

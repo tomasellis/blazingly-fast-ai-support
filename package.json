@@ -10,6 +10,7 @@
     "dev:python": "poetry install && poetry run uvicorn app:app --reload --env-file .env --log-level debug",
     "dev": "concurrently 'npm:dev:*'",
     "seed": "tsx db/seed.ts",
+    "migrate": "tsx db/migrate.ts",
     "resetdb": "rm db.sqlite3 && drizzle-kit push:sqlite && tsx db/seed.ts"
   },
   "dependencies": {

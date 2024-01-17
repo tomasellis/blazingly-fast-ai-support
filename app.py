@@ -27,7 +27,7 @@ langserve.add_routes(
 
 import fastapi
 from typing import List
-from pydantic import BaseModel, RootModel
+from pydantic import BaseModel, RootModel, Request
 
 import langserve
 from langchain_core.prompts import ChatPromptTemplate
@@ -77,6 +77,15 @@ def healthcheck():
     return {"status": "ok"}
 
 
+@app.middleware("http")
+async def add_process_time_header(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    process_time = time.time() - start_time
+    response.headers["X-Process-Time"] = str(process_time)
+    return response
+
+
 # Make chains
 # RETRIEVAL CHAIN
 
@@ -85,12 +94,13 @@ TEMPLATE = """{input}"""
 
 prompt = ChatPromptTemplate.from_template(TEMPLATE)
 
+
 model = ChatOpenAI()
+
 
 output_parser = StrOutputParser()
 
 chain = prompt | model | output_parser
-
 
 langserve.add_routes(
     app,
