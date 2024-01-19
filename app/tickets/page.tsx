@@ -10,6 +10,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { TicketIdContext } from "./layout";
 import { ChevronDownIcon } from "@radix-ui/react-icons";
 import useIsOnscreen from "@/components/hooks/useIsOnScreen";
+import { useInView } from "react-intersection-observer";
 
 export default function Chatbox() {
   const initial_data = { pages: [], pageParams: [] };
@@ -22,8 +23,7 @@ export default function Chatbox() {
   const { mutateAsync: asyncMutateMessage } = messageMut;
   const { data } = useInfiniteChat(ticketId, initial_data);
 
-  const messageRef = useRef<HTMLDivElement>(null);
-  const isMessageOnScreen = useIsOnscreen(messageRef);
+  const [messageRef, messageInView, entry] = useInView();
 
   const handleNewMessage = async (input: string) => {
     setSentFirstMessage(true);
@@ -68,10 +68,10 @@ export default function Chatbox() {
                 <div key={i} className="">
                   {messages.toReversed().map((message, msgi) => (
                     <Message
-                      msgRef={
+                      ref={
                         data.pages.length > 0 &&
                         i === data.pages.length - 1 &&
-                        msgi === messages.length - 1
+                        msgi === 0
                           ? messageRef
                           : null
                       }
@@ -91,7 +91,7 @@ export default function Chatbox() {
           </>
         ) : null}
       </div>
-      {sentFirstMessage && !isMessageOnScreen && (
+      {sentFirstMessage && !messageInView && (
         <button
           onClick={() => {
             const scroller = scrollerRef.current as HTMLDivElement;

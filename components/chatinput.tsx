@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import useInfiniteChat from "./hooks/useInfiniteChat";
 import { InfiniteData } from "@tanstack/react-query";
 import { TicketIdContext } from "@/app/tickets/layout";
+import { Textarea } from "./ui/textarea";
 
 function ChatInput(props: {
   ticketId: string;
@@ -58,6 +59,14 @@ function ChatInput(props: {
     textareaRef?.current?.focus();
   }, [id]);
 
+  const resizeTextArea = () => {
+    const textAreaRef = textareaRef.current as HTMLTextAreaElement;
+    textAreaRef.style.height = "auto";
+    textAreaRef.style.height = textAreaRef.scrollHeight + "px";
+  };
+
+  React.useEffect(resizeTextArea, [input]);
+
   return (
     <form
       ref={formRef}
@@ -71,7 +80,33 @@ function ChatInput(props: {
       className="h-min flex-initial flex w-full justify-center items-center 
       box-border border-solid border-red-500flex px-4 py-4 border-t border-gray-700  bg-gray-800"
     >
-      <TextareaAutosize
+      <Textarea
+        autoFocus={true}
+        name="msg"
+        ref={textareaRef}
+        value={input}
+        onChange={(e) => {
+          setInput(e.currentTarget.value);
+        }}
+        onKeyDown={(e) => {
+          handleKeyDown(e);
+        }}
+        maxLength={500}
+        style={{
+          resize: "none",
+        }}
+        rows={1}
+        required
+        autoComplete="off"
+        className="no-scrollbar max-h-[140px] min-h-[25px] outline-none p-2 mr-5 flex-1 
+       rounded-sm w-full  bg-gray-700 text-gray-300 items-baseline"
+        placeholder={
+          path === "/tickets"
+            ? "Send a message to reach Customer Support..."
+            : "Message Customer Support..."
+        }
+      />
+      {/* <TextareaAutosize
         autoFocus={true}
         name="msg"
         ref={textareaRef}
@@ -97,7 +132,7 @@ function ChatInput(props: {
         }}
         required
         autoComplete="off"
-      />
+      /> */}
 
       <Button
         variant="default"

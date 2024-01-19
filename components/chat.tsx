@@ -9,6 +9,7 @@ import useInfiniteChat from "@/components/hooks/useInfiniteChat";
 import useIsOnScreen from "@/components/hooks/useIsOnScreen";
 import { ChevronDownIcon, ReloadIcon } from "@radix-ui/react-icons";
 import { InfiniteData } from "@tanstack/react-query";
+import { useInView } from "react-intersection-observer";
 
 export default function Chat(props: {
   initialData: InfiniteData<Message[], MessageParams>;
@@ -19,11 +20,15 @@ export default function Chat(props: {
   const scrollerRef = React.useRef<HTMLDivElement>(null);
   const fetchRef = React.useRef<HTMLDivElement>(null);
   const isFetcherOnScreen = useIsOnScreen(fetchRef);
-  const messageRef = React.useRef<HTMLDivElement>(null);
-  const isMessageOnScreen = useIsOnScreen(messageRef);
+
+  const [messageRef, messageInView, entry] = useInView();
+
+
   const [isFetchingTimeout, setIsFetchingTimeout] = React.useState(false);
   const [lastScrollerHeight, setLastScrollerHeight] = React.useState(0);
+  const [canDisplayArrow, setCanDisplayArrow] = React.useState(false);
 
+  const lastMessageRef = React.useRef<HTMLDivElement>(null);
   const newMessagesRef = React.useRef<HTMLDivElement>(null);
   const { messageMut, optimisticMessage } = useMessage(
     ticketId,
@@ -86,6 +91,15 @@ export default function Chat(props: {
     const currScrollerHeight = scroller.scrollHeight;
     const heightDIff = currScrollerHeight - lastScrollerHeight;
     scroller.scrollTop += heightDIff;
+
+    // Wait before displaying chevron down
+    const id = window.setTimeout(() => {
+      setCanDisplayArrow(true);
+    }, 500);
+
+    return () => {
+      window.clearTimeout(id);
+    };
   }, [data]);
 
   React.useEffect(() => {
@@ -122,7 +136,7 @@ export default function Chat(props: {
                         last={false}
                         message={message}
                         key={message.id}
-                        msgRef={
+                        ref={
                           i === data.pages.length - 1 &&
                           msgi === messages.length - 1
                             ? messageRef
@@ -141,7 +155,7 @@ export default function Chat(props: {
           </>
         ) : null}
       </div>
-      {!isMessageOnScreen && (
+      {canDisplayArrow && !messageInView && (
         <button
           onClick={() => {
             const scroller = scrollerRef.current as HTMLDivElement;
