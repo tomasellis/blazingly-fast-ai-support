@@ -19,7 +19,7 @@ const useMessage = (
   initial_data: InfiniteData<Message[], MessageParams>
 ) => {
   const queryClient = useQueryClient();
-
+  const { fetchNextPage } = useInfiniteChat(ticket_id, initial_data);
   const path = usePathname();
   const { setId } = useContext(TicketIdContext);
 
@@ -63,9 +63,7 @@ const useMessage = (
     onSuccess: async (data, variables) => {
       console.log(data.added_message, data.added_message_ai);
       console.log("FETCHING NEXT PAGE");
-      await queryClient.invalidateQueries({
-        queryKey: ["ticket", variables.ticket_id],
-      });
+      await fetchNextPage();
 
       if (path === "/tickets") {
         setId(data.added_message[0].ticket_id);
