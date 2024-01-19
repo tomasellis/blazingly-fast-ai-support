@@ -3,6 +3,9 @@ import React from "react";
 import { useTickets } from "./hooks/useTickets";
 import TicketTab from "./tickettab";
 import NewTicketTab from "./newtickettab";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { get_tickets } from "./queries/queries";
+import { ReloadIcon } from "@radix-ui/react-icons";
 import { usePathname } from "next/navigation";
 
 export default function TicketsBox() {
@@ -21,19 +24,26 @@ export default function TicketsBox() {
           <span>Previous tickets</span>
         </div>
         <div className="flex-auto h-[200px] overflow-y-auto no-scrollbar p-4 space-y-4">
+          {!data && isFetching && (
+            <div className="w-full flex justify-center items-center">
+              <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+            </div>
+          )}
           {!isFetching && !data && (
             <p className="text-lg">
               No tickets available. Please start a new chat.
             </p>
           )}
-          <ul>
-            {data &&
-              data.map((ticket, pageIndex) => (
-                <li key={ticket.id}>
-                  <TicketTab key={ticket.id} ticket={ticket} />
-                </li>
-              ))}
-          </ul>
+          {
+            <ul>
+              {data &&
+                data.map((ticket, pageIndex) => (
+                  <li key={ticket.id}>
+                    <TicketTab key={ticket.id} ticket={ticket} />
+                  </li>
+                ))}
+            </ul>
+          }
         </div>
       </div>
     </div>

@@ -9,18 +9,17 @@ import { RemoteRunnable } from "langchain/runnables/remote";
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
-export async function get_ticket(ticket_id: string) {
+export async function get_ticket(ticket_id: string, limit?: number) {
   console.log("Getting ticket");
   const ticket = await db.query.ticket.findFirst({
     where: (ticket, { eq }) => eq(ticket.id, ticket_id),
     with: {
       messages: {
         orderBy: (message) => asc(message.timestamp),
-        limit: 30,
+        limit: limit ?? 30,
       },
     },
   });
-  console.log({ ticket });
   return ticket;
 }
 
@@ -31,7 +30,6 @@ export async function get_infinite_chat({
   ticket_id: string;
   pageParam: { cursor: Date | string; type: "prev" | "next" | string };
 }) {
-  await sleep(3000);
   console.log("Getting infinite ticket - ", pageParam);
   const date =
     typeof pageParam.cursor === "string"
@@ -41,13 +39,11 @@ export async function get_infinite_chat({
   const messages = await db.query.message.findMany({
     where: (message, { eq, lt, and, gt }) => {
       if (pageParam.type === "prev") {
-        console.log("prev---------------------->>>>");
         return and(
           eq(message.ticket_id, ticket_id),
           lt(message.timestamp, date)
         );
       } else {
-        console.log("next------------------------>>>>");
         return and(
           eq(message.ticket_id, ticket_id),
           gt(message.timestamp, date)
@@ -95,16 +91,17 @@ export async function add_message({
     `Execution time: CHECK IF TICKET EXISTS - ${Date.now() - start} ms`
   );
 
-  console.log({ exists });
   // TODO: generate title
-
+  let newTicket = null;
   if (exists === undefined) {
     console.log("doesnt exist, lets create");
-    const newTicket = await db.insert(ticket).values({
-      description: content,
-      id: ticket_id,
-    });
-    console.log({ newTicket });
+    newTicket = await db
+      .insert(ticket)
+      .values({
+        description: content,
+        id: ticket_id,
+      })
+      .returning();
     console.log(`Execution time: ADD NEW TICKET - ${Date.now() - start} ms`);
   }
 
@@ -141,7 +138,8 @@ export async function add_message({
     `Execution time: ADD AI MESSAGE TO DB - ${Date.now() - start} ms`
   );
 
-  return { added_message, added_message_ai };
+  if (newTicket !== null) return { added_message, added_message_ai, newTicket };
+  return { added_message, added_message_ai, newTicket: undefined };
 }
 
 export async function add_ticket({
@@ -186,15 +184,14 @@ export async function add_ticket({
     })
     .returning();
 
-  await sleep(2000);
   console.log({ added_message, added_ticket, added_message_ai });
   return { added_ticket };
 }
 
 async function get_ai_response({ ticket_id }: { ticket_id: string }) {
   try {
-    const ticket = await get_ticket(ticket_id);
-
+    const ticket = await get_ticket(ticket_id, 0);
+    console.table(ticket?.messages);
     const parsed_messages = ticket?.messages
       .map((message) => {
         return `${message.role === "ai" ? "AI" : "User"}: ${message.content}`;
@@ -221,8 +218,6 @@ ${parsed_messages}
 
 AI: `;
 
-    console.log("INPUT", INPUT);
-
     let result = (await chain.invoke({
       input: INPUT,
     })) as string;
@@ -234,6 +229,6 @@ AI: `;
     return { result };
   } catch (err) {
     console.log("ticket", err);
-    return { text: "f" };
+    return { text: "Failed getting AI resposne", err };
   }
 }

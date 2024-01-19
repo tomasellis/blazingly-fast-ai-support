@@ -82,10 +82,10 @@ def healthcheck():
 
 # REQUEST TO DB = lala
 TEMPLATE = """{input}"""
-
+print(TEMPLATE)
 prompt = ChatPromptTemplate.from_template(TEMPLATE)
 
-model = ChatOpenAI(request_timeout=500)
+model = ChatOpenAI(timeout=1000, max_retries=20, temperature=0.8, model="gpt-3.5-turbo-1106")
 
 output_parser = StrOutputParser()
 

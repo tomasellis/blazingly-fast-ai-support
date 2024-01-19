@@ -1,9 +1,4 @@
-import {
-  QueryFunction,
-  UndefinedInitialDataOptions,
-  UseQueryResult,
-  useQuery,
-} from "@tanstack/react-query";
+import { UseQueryResult, useQuery } from "@tanstack/react-query";
 import { type ClassValue, clsx } from "clsx";
 import React from "react";
 import { twMerge } from "tailwind-merge";
@@ -25,7 +20,6 @@ export const handleScrollEvent = (
   const target = event.target as HTMLElement;
   const bottom = target.scrollHeight - target.scrollTop === target.clientHeight;
   if (bottom) {
-    console.log("bottom");
     return setBoolean(true);
   }
   return setBoolean(false);

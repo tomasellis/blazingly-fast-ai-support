@@ -1,9 +1,6 @@
 "use client";
-import React, { useContext } from "react";
+import React from "react";
 import TicketsBox from "@/components/ticketsbox";
-import ChatInput from "@/components/chatinput";
-import { nanoid } from "ai";
-import { string } from "valibot";
 import Link from "next/link";
 
 export const TicketIdContext = React.createContext({

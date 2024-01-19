@@ -8,14 +8,13 @@ const useInfiniteChat = (
 ) => {
   return useSuspenseInfiniteQuery({
     initialData: initial_data,
-    staleTime: 1000 * 60 * 10,
+    staleTime: Infinity,
     queryKey: ["ticket", ticket_id],
     queryFn: ({ pageParam }) => {
       return get_infinite_chat({ pageParam, ticket_id });
     },
     initialPageParam: { type: "prev", cursor: new Date(8.64e15) },
     getNextPageParam: (last_page, pages) => {
-      console.table(pages);
       const newestTimestamp = pages.findLast((p) => p.length)?.at(0)?.timestamp;
 
       if (newestTimestamp) {
@@ -24,7 +23,6 @@ const useInfiniteChat = (
       return { type: "next", cursor: new Date(8.64e15) };
     },
     getPreviousPageParam: (first_page, pages, params) => {
-      console.log("getprev", { pages });
       const oldestTimestamp = pages.at(0)?.at(-1)?.timestamp;
 
       if (oldestTimestamp) {

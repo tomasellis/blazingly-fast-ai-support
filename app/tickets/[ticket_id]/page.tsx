@@ -24,7 +24,6 @@ export default async function ChatPage({
   /*  const ticket_id = nanoid(); */
 
   const dateNow = new Date();
-  console.log({ dateNow });
 
   const initial_data: InfiniteData<Message[], MessageParams> = {
     pages: [
@@ -37,6 +36,8 @@ export default async function ChatPage({
     //pageParams: [{ type: "prev", cursor: new Date() }],
     pageParams: [{ type: "prev", cursor: dateNow }],
   };
+
+  
 
   return <Chat initialData={initial_data} ticketId={params.ticket_id} />;
 }

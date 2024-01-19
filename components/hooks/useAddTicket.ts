@@ -25,7 +25,6 @@ const useAddTicket = (ticket_id: string) => {
   const [newChatOptimisticMessage, setNewChatOptimisticMessage] =
     React.useState<Message | null>(null);
   const queryClient = useQueryClient();
-  const { fetchPreviousPage, fetchNextPage } = useInfiniteChat(ticket_id, );
   const newChatMut = useMutation({
     mutationFn: ({
       description,
@@ -110,13 +109,11 @@ const useAddTicket = (ticket_id: string) => {
     onSuccess: async (data, variables, context) => {
       /* queryClient.fetchQuery({ queryKey: ["ticket", variables.id] }); */
       console.log("Fetching on success ticket");
-      
 
       await queryClient.refetchQueries({
         queryKey: ["ticket", data.added_ticket[0].id],
       });
 
-      await fetchPreviousPage();
       setNewChatOptimisticMessage(null);
       /* queryClient.setQueryData(
         ["ticket", ticket_id],
@@ -171,7 +168,6 @@ const useAddTicket = (ticket_id: string) => {
 
     onSettled: async (data, error, variables, context) => {
       // Error or success... doesn't matter!
-      //console.log("got it!", { response: data?.data.aiResponse.data });
       await queryClient.invalidateQueries({ queryKey: ["tickets"] });
       console.log("Refetching Add Ticket - TICKET");
     },

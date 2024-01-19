@@ -1,17 +1,9 @@
 "use client";
-import React, { startTransition, useContext } from "react";
+import React from "react";
 import { Button } from "./ui/button";
-import useMessage from "./hooks/useMessage";
 import { PaperPlaneIcon } from "@radix-ui/react-icons";
 import TextareaAutosize from "react-textarea-autosize";
-import {
-  redirect,
-  usePathname,
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
-import { nanoid } from "nanoid";
-import useTicket from "./hooks/useTicket";
+import { usePathname } from "next/navigation";
 import useInfiniteChat from "./hooks/useInfiniteChat";
 import { InfiniteData } from "@tanstack/react-query";
 
@@ -24,7 +16,7 @@ function ChatInput(props: {
   const path = usePathname();
   const formRef = React.useRef<HTMLFormElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-  const { data, isFetching } = useInfiniteChat(
+  const { data, isFetching, isFetchingNextPage } = useInfiniteChat(
     props.ticketId,
     props.initialData
   );
@@ -60,6 +52,7 @@ function ChatInput(props: {
       box-border border-solid border-red-500flex px-4 py-4 border-t border-gray-700  bg-gray-800"
     >
       <TextareaAutosize
+        disabled={isFetchingNextPage}
         autoFocus={true}
         name="msg"
         ref={textareaRef}
@@ -70,8 +63,8 @@ function ChatInput(props: {
         onKeyDown={(e) => {
           handleKeyDown(e);
         }}
-        className="max-h-[140px] min-h-[25px] outline-none p-2 mr-5 flex-1 
-        h-full rounded-sm w-full box-border bg-gray-700 text-gray-300"
+        className="max-h-[140px] h-min min-h-[25px] outline-none p-2 mr-5 flex-1 
+       rounded-sm w-full box-border bg-gray-700 text-gray-300 items-baseline"
         placeholder={
           path === "/tickets"
             ? "Send a message to reach Customer Support..."
@@ -90,11 +83,11 @@ function ChatInput(props: {
       <Button
         variant="default"
         size="icon"
-        className=" rounded-full bg-indigo-500 text-white hover:bg-indigo-600 transition duration-200 ease-in-out transform hover:scale-105"
-        disabled={isFetching}
+        className="flex items-center rounded-full bg-inherit text-gray-500 hover:bg-indigo-600 hover:text-white transition duration-200 ease-in-out transform hover:scale-105"
+        disabled={isFetchingNextPage}
         type="submit"
       >
-        <PaperPlaneIcon className=" bottom-0 right-0 h-6 w-6 -rotate-90" />
+        <PaperPlaneIcon className=" bottom-0 right-0 h-6 w-6 " />
       </Button>
     </form>
   );

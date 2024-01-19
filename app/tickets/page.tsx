@@ -6,22 +6,20 @@ import Message from "@/components/message";
 import FakeMessage from "@/components/fakemessage";
 import useMessage from "@/components/hooks/useMessage";
 import useInfiniteChat from "@/components/hooks/useInfiniteChat";
-import useAddTicket from "@/components/hooks/useAddTicket";
-import { ReloadIcon } from "@radix-ui/react-icons";
+import { usePathname, useRouter } from "next/navigation";
 import { TicketIdContext } from "./layout";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 export default function Chatbox() {
   const initial_data = { pages: [], pageParams: [] };
-
+  const router = useRouter();
   const scrollerRef = React.useRef<HTMLDivElement>(null);
   const [ticketId, setTicketId] = React.useState("");
   const [sentFirstMessage, setSentFirstMessage] = React.useState(false);
   const { messageMut, optimisticMessage } = useMessage(ticketId, initial_data);
   const { mutateAsync: asyncMutateMessage } = messageMut;
-  const { setId, id } = useContext(TicketIdContext);
   const { data } = useInfiniteChat(ticketId, initial_data);
   const path = usePathname();
+  const { setId } = useContext(TicketIdContext);
 
   const handleNewMessage = async (input: string) => {
     setSentFirstMessage(true);
@@ -35,8 +33,8 @@ export default function Chatbox() {
 
   React.useEffect(() => {
     const newId = nanoid();
-    setTicketId(newId);
     setId(newId);
+    setTicketId(newId);
   }, [path]);
 
   return (

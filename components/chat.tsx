@@ -1,5 +1,5 @@
 "use client";
-import React, { useContext, useRef } from "react";
+import React, { useRef } from "react";
 import ChatInput from "@/components/chatinput";
 import { nanoid } from "nanoid";
 import Message from "@/components/message";
@@ -7,61 +7,32 @@ import FakeMessage from "@/components/fakemessage";
 import useMessage from "@/components/hooks/useMessage";
 import useInfiniteChat from "@/components/hooks/useInfiniteChat";
 import useIsOnscreen from "@/components/hooks/useIsOnScreen";
-import { ReloadIcon } from "@radix-ui/react-icons";
-import { TicketIdContext } from "@/app/tickets/layout";
-import { InfiniteData, useSuspenseInfiniteQuery } from "@tanstack/react-query";
-import { get_infinite_chat } from "./queries/queries";
+import { ChevronDownIcon, ReloadIcon } from "@radix-ui/react-icons";
+import { InfiniteData } from "@tanstack/react-query";
 
 export default function Chat(props: {
   initialData: InfiniteData<Message[], MessageParams>;
   ticketId: string;
 }) {
-  const scrollerRef = React.useRef<HTMLDivElement>(null);
   const [ticketId, setTicketId] = React.useState(props.ticketId);
-  const { setId } = useContext(TicketIdContext);
+
+  const scrollerRef = React.useRef<HTMLDivElement>(null);
   const fetchRef = useRef(null);
-  const newMessagesRef = useRef(null);
   const isFetcherOnScreen = useIsOnscreen(fetchRef);
+  const [isFetchingTimeout, setIsFetchingTimeout] = React.useState(false);
+  const [lastScrollerHeight, setLastScrollerHeight] = React.useState(0);
+
+  const [atBottom, setAtBottom] = React.useState(false);
+
+  const newMessagesRef = useRef<HTMLDivElement>(null);
   const { messageMut, optimisticMessage } = useMessage(
     ticketId,
     props.initialData
   );
   const { mutateAsync: asyncMutateMessage, isPending: pendingMessage } =
     messageMut;
-  /*  useInfiniteChat(ticketId, props.initialData); */
-
-  const {
-    data,
-    fetchPreviousPage,
-    hasPreviousPage,
-    isFetching,
-    isFetchingPreviousPage,
-  } = useSuspenseInfiniteQuery({
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    initialData: props.initialData,
-    queryKey: ["ticket", props.ticketId],
-    queryFn: ({ pageParam }) => {
-      return get_infinite_chat({ pageParam, ticket_id: ticketId });
-    },
-    initialPageParam: { type: "prev", cursor: new Date(8.64e15) },
-    getNextPageParam: (last_page, pages) => {
-      const newestTimestamp = pages.findLast((p) => p.length)?.at(0)?.timestamp;
-
-      if (newestTimestamp) {
-        return { type: "next", cursor: newestTimestamp };
-      }
-      return { type: "next", cursor: new Date(8.64e15) };
-    },
-    getPreviousPageParam: (first_page, pages, params) => {
-      const oldestTimestamp = pages.at(0)?.at(-1)?.timestamp;
-
-      if (oldestTimestamp) {
-        return { type: "prev", cursor: oldestTimestamp };
-      }
-      return null;
-    },
-  });
+  const { data, fetchPreviousPage, hasPreviousPage, isFetchingPreviousPage } =
+    useInfiniteChat(ticketId, props.initialData);
 
   const handleNewMessage = async (input: string) => {
     console.log("sending new message", { ticketId });
@@ -73,56 +44,90 @@ export default function Chat(props: {
     });
   };
 
-  /*  React.useEffect(() => {
-    (async () => {
-      if (isFetcherOnScreen && !isFetchingPreviousPage) {
-        await fetchPreviousPage();
-        const newMessages = newMessagesRef.current
-          ? (newMessagesRef.current as HTMLDivElement)
-          : null;
-        if (newMessages) newMessages.scrollIntoView({ behavior: "instant" });
-      }
-    })();
-  }, [isFetcherOnScreen, isFetchingPreviousPage, fetchPreviousPage]); */
+  const handleScroll = (e: React.UIEvent<HTMLDivElement, UIEvent>) => {
+    const currAtBottom =
+      e.currentTarget.scrollHeight - e.currentTarget.scrollTop ===
+      e.currentTarget.clientHeight;
+    if (currAtBottom !== atBottom) {
+      setAtBottom(currAtBottom);
+    }
+  };
 
   React.useEffect(() => {
-    setId(ticketId);
-  }, [ticketId, setId]);
+    let id: number | null = null;
+    const fetchNext = async () => {
+      if (
+        isFetcherOnScreen &&
+        hasPreviousPage &&
+        !isFetchingPreviousPage &&
+        !isFetchingTimeout
+      ) {
+        await fetchPreviousPage();
+
+        // Get current scroll position
+        const scroller = scrollerRef.current as HTMLDivElement;
+        setLastScrollerHeight(scroller?.scrollHeight ?? 0);
+
+        setIsFetchingTimeout(true);
+        id = window.setTimeout(() => {
+          setIsFetchingTimeout(false);
+        }, 1000);
+      }
+    };
+
+    fetchNext().catch((err) => console.error(err));
+
+    return () => {
+      if (id !== null) {
+        window.clearTimeout(id);
+      }
+    };
+  }, [
+    isFetcherOnScreen,
+    isFetchingPreviousPage,
+    fetchPreviousPage,
+    isFetchingTimeout,
+  ]);
+
+  // When fetching data try an keep scroll position
+  React.useEffect(() => {
+    const scroller = scrollerRef.current as HTMLDivElement;
+    const currScrollerHeight = scroller.scrollHeight;
+    const heightDIff = currScrollerHeight - lastScrollerHeight;
+    scroller.scrollTop += heightDIff;
+  }, [data]);
+
+  React.useEffect(() => {
+    const scroller = scrollerRef.current as HTMLDivElement;
+    scroller.scrollTop = scroller.scrollHeight;
+  }, []);
+
+  React.useEffect(() => {
+    console.log({ atBottom });
+  }, [atBottom]);
 
   return (
     <div className="h-full w-full flex flex-col no-scrollbar">
       <div
         ref={scrollerRef}
-        className="h-full no-scrollbar overflow-auto p-4 space-y-4"
+        className="relative h-full no-scrollbar overflow-auto p-4 "
+        onScroll={handleScroll}
       >
+        <div ref={fetchRef} className="w-full"></div>
         <div className="relative w-full flex justify-center">
-          {isFetchingPreviousPage && !data?.pages[0] && (
+          {isFetchingPreviousPage && data?.pages.length >= 2 && (
             <div className="flex justify-center">
               <ReloadIcon className="h-8 w-8 animate-spin" />
             </div>
           )}
-
-          {isFetching && !data && "Loading..."}
-
-          {!isFetching && hasPreviousPage && (
-            <button onClick={async () => await fetchPreviousPage()}>
-              Load More
-            </button>
-          )}
-
           {data?.pages[0].length === 0 && data.pages.length === 1
             ? "This chat is empty. Send a message to start."
             : null}
         </div>
-        <div ref={fetchRef} className="w-full"></div>
 
         {data?.pages.map((messages, i) => {
           return (
-            <div
-              ref={i === 1 && hasPreviousPage ? newMessagesRef : null}
-              key={i}
-              className=""
-            >
+            <div key={i} ref={i === 0 ? newMessagesRef : null}>
               {messages.length > 0
                 ? messages
                     .toReversed()
@@ -144,6 +149,17 @@ export default function Chat(props: {
           </>
         ) : null}
       </div>
+      {!atBottom && (
+        <button
+          onClick={() => {
+            const scroller = scrollerRef.current as HTMLDivElement;
+            scroller.scrollTop = scroller.scrollHeight;
+          }}
+          className="absolute right-[25px] bottom-[10%] w-min rounded-full bg-gray-700  text-gray-800 hover:bg-indigo-600 hover:text-white"
+        >
+          <ChevronDownIcon className="h-10 w-10" />
+        </button>
+      )}
       <ChatInput
         ticketId={ticketId}
         handleNewMessage={handleNewMessage}

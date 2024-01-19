@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React from "react";
 import "@/styles/loading.css";
 import { cx } from "class-variance-authority";
 import Link from "next/link";
