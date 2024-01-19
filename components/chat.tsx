@@ -1,12 +1,12 @@
 "use client";
-import React, { useRef } from "react";
+import React from "react";
 import ChatInput from "@/components/chatinput";
 import { nanoid } from "nanoid";
 import Message from "@/components/message";
 import FakeMessage from "@/components/fakemessage";
 import useMessage from "@/components/hooks/useMessage";
 import useInfiniteChat from "@/components/hooks/useInfiniteChat";
-import useIsOnscreen from "@/components/hooks/useIsOnScreen";
+import useIsOnScreen from "@/components/hooks/useIsOnScreen";
 import { ChevronDownIcon, ReloadIcon } from "@radix-ui/react-icons";
 import { InfiniteData } from "@tanstack/react-query";
 
@@ -17,14 +17,14 @@ export default function Chat(props: {
   const [ticketId, setTicketId] = React.useState(props.ticketId);
 
   const scrollerRef = React.useRef<HTMLDivElement>(null);
-  const fetchRef = useRef(null);
-  const isFetcherOnScreen = useIsOnscreen(fetchRef);
+  const fetchRef = React.useRef<HTMLDivElement>(null);
+  const isFetcherOnScreen = useIsOnScreen(fetchRef);
+  const messageRef = React.useRef<HTMLDivElement>(null);
+  const isMessageOnScreen = useIsOnScreen(messageRef);
   const [isFetchingTimeout, setIsFetchingTimeout] = React.useState(false);
   const [lastScrollerHeight, setLastScrollerHeight] = React.useState(0);
 
-  const [atBottom, setAtBottom] = React.useState(false);
-
-  const newMessagesRef = useRef<HTMLDivElement>(null);
+  const newMessagesRef = React.useRef<HTMLDivElement>(null);
   const { messageMut, optimisticMessage } = useMessage(
     ticketId,
     props.initialData
@@ -42,16 +42,6 @@ export default function Chat(props: {
       ticket_id: ticketId,
       timestamp: new Date(),
     });
-  };
-
-  const handleScroll = (e: React.UIEvent<HTMLDivElement, UIEvent>) => {
-    const currAtBottom =
-      e.currentTarget.scrollHeight - e.currentTarget.scrollTop <=
-      e.currentTarget.clientHeight + 100;
-    if (currAtBottom) {
-      return setAtBottom(true);
-    }
-    return setAtBottom(false);
   };
 
   React.useEffect(() => {
@@ -103,16 +93,11 @@ export default function Chat(props: {
     scroller.scrollTop = scroller.scrollHeight;
   }, []);
 
-  React.useEffect(() => {
-    console.log({ atBottom });
-  }, [atBottom]);
-
   return (
     <div className="h-full w-full flex flex-col no-scrollbar">
       <div
         ref={scrollerRef}
         className="relative h-full no-scrollbar overflow-auto p-4 "
-        onScroll={handleScroll}
       >
         <div ref={fetchRef} className="w-full"></div>
         <div className="relative w-full flex justify-center">
@@ -132,11 +117,17 @@ export default function Chat(props: {
               {messages.length > 0
                 ? messages
                     .toReversed()
-                    .map((message) => (
+                    .map((message, msgi) => (
                       <Message
                         last={false}
                         message={message}
                         key={message.id}
+                        msgRef={
+                          i === data.pages.length - 1 &&
+                          msgi === messages.length - 1
+                            ? messageRef
+                            : null
+                        }
                       />
                     ))
                 : null}
@@ -150,7 +141,7 @@ export default function Chat(props: {
           </>
         ) : null}
       </div>
-      {!atBottom && (
+      {!isMessageOnScreen && (
         <button
           onClick={() => {
             const scroller = scrollerRef.current as HTMLDivElement;

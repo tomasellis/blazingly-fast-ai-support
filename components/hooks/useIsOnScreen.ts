@@ -5,17 +5,21 @@ function useIsOnscreen(elementRef: any) {
   const [isOnscreen, setIsOnscreen] = React.useState(false);
 
   React.useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      const [entry] = entries;
+    if (elementRef.current !== null) {
+      const observer = new IntersectionObserver((entries) => {
+        const [entry] = entries;
 
-      setIsOnscreen(entry.isIntersecting);
-    });
+        setIsOnscreen(entry.isIntersecting);
+      });
 
-    observer.observe(elementRef.current);
+      observer.observe(elementRef.current);
 
-    return () => {
-      observer.disconnect();
-    };
+      return () => {
+        observer.disconnect();
+      };
+    } else {
+      setIsOnscreen(false);
+    }
   }, [elementRef]);
 
   return isOnscreen;

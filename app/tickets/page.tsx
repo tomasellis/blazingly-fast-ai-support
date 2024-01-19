@@ -1,5 +1,5 @@
 "use client";
-import React, { useContext } from "react";
+import React, { useContext, useRef } from "react";
 import ChatInput from "@/components/chatinput";
 import { nanoid } from "nanoid";
 import Message from "@/components/message";
@@ -8,6 +8,8 @@ import useMessage from "@/components/hooks/useMessage";
 import useInfiniteChat from "@/components/hooks/useInfiniteChat";
 import { usePathname, useRouter } from "next/navigation";
 import { TicketIdContext } from "./layout";
+import { ChevronDownIcon } from "@radix-ui/react-icons";
+import useIsOnscreen from "@/components/hooks/useIsOnScreen";
 
 export default function Chatbox() {
   const initial_data = { pages: [], pageParams: [] };
@@ -19,7 +21,9 @@ export default function Chatbox() {
   const { messageMut, optimisticMessage } = useMessage(ticketId, initial_data);
   const { mutateAsync: asyncMutateMessage } = messageMut;
   const { data } = useInfiniteChat(ticketId, initial_data);
-  const path = usePathname();
+
+  const messageRef = useRef<HTMLDivElement>(null);
+  const isMessageOnScreen = useIsOnscreen(messageRef);
 
   const handleNewMessage = async (input: string) => {
     setSentFirstMessage(true);
@@ -55,15 +59,26 @@ export default function Chatbox() {
             </div>
           </div>
         )}
-        {data?.pages.some((p) =>
+        {data.pages.some((p) =>
           p.some((messages) => messages.ticket_id === ticketId)
         ) &&
-          data?.pages.map((page, i) => {
-            if (page.length >= 1) {
+          data.pages.map((messages, i) => {
+            if (messages.length >= 1) {
               return (
                 <div key={i} className="">
-                  {page.toReversed().map((message) => (
-                    <Message last={false} message={message} key={message.id} />
+                  {messages.toReversed().map((message, msgi) => (
+                    <Message
+                      msgRef={
+                        data.pages.length > 0 &&
+                        i === data.pages.length - 1 &&
+                        msgi === messages.length - 1
+                          ? messageRef
+                          : null
+                      }
+                      last={false}
+                      message={message}
+                      key={message.id}
+                    />
                   ))}
                 </div>
               );
@@ -76,6 +91,17 @@ export default function Chatbox() {
           </>
         ) : null}
       </div>
+      {sentFirstMessage && !isMessageOnScreen && (
+        <button
+          onClick={() => {
+            const scroller = scrollerRef.current as HTMLDivElement;
+            scroller.scrollTop = scroller.scrollHeight;
+          }}
+          className="absolute right-[25px] bottom-[10%] w-min rounded-full bg-gray-700  text-gray-800 hover:bg-indigo-600 hover:text-white"
+        >
+          <ChevronDownIcon className="h-10 w-10" />
+        </button>
+      )}
       <ChatInput
         ticketId={ticketId}
         handleNewMessage={handleNewMessage}

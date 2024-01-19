@@ -2,6 +2,7 @@
 import React from "react";
 import TicketsBox from "@/components/ticketsbox";
 import Link from "next/link";
+import { nanoid } from "nanoid";
 
 export const TicketIdContext = React.createContext({
   id: "",
@@ -13,7 +14,7 @@ export default function TicketsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [id, setId] = React.useState("");
+  const [id, setId] = React.useState(nanoid());
 
   return (
     <div className=" h-full flex flex-col bg-gray-900 overflow-y-auto text-white dark ">

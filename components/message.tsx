@@ -4,6 +4,7 @@ import React from "react";
 export default function Message({
   message,
   last,
+  msgRef,
 }: {
   message: {
     id: string;
@@ -12,17 +13,16 @@ export default function Message({
     ticket_id: string;
     role: "ai" | "user" | null;
   };
+  msgRef?: React.RefObject<HTMLDivElement> | null;
   last: boolean;
 }) {
-  const messageRef = React.useRef<HTMLDivElement>(null);
-
   if (message.role === "ai") {
     return (
       <div
-        ref={messageRef}
+        ref={msgRef}
         key={message.id}
         className="flex items-end justify-start"
-        id={last ? "last" : ""}
+        id={message.id}
       >
         <div className="flex flex-col space-y-1  max-w-md">
           <p className="text-sm text-gray-400 text-start">
@@ -38,11 +38,7 @@ export default function Message({
   }
 
   return (
-    <div
-      ref={messageRef}
-      key={message.id}
-      className="flex items-end justify-end"
-    >
+    <div ref={msgRef} key={message.id} className="flex items-end justify-end">
       <div className="flex flex-col space-y-1  max-w-md">
         <p className="text-sm text-gray-400 text-end">
           You • {dateFormatter.format(new Date(message.timestamp))}
