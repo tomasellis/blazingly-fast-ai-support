@@ -46,11 +46,12 @@ export default function Chat(props: {
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement, UIEvent>) => {
     const currAtBottom =
-      e.currentTarget.scrollHeight - e.currentTarget.scrollTop ===
-      e.currentTarget.clientHeight;
-    if (currAtBottom !== atBottom) {
-      setAtBottom(currAtBottom);
+      e.currentTarget.scrollHeight - e.currentTarget.scrollTop <=
+      e.currentTarget.clientHeight + 100;
+    if (currAtBottom) {
+      return setAtBottom(true);
     }
+    return setAtBottom(false);
   };
 
   React.useEffect(() => {

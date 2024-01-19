@@ -31,7 +31,7 @@ export default function TicketTab(props: {
     if (currId === props.ticket.id && ticketRef.current) {
       if (!isOnScreen) {
         const el = ticketRef.current as HTMLElement;
-        el.scrollIntoView();
+        el.scrollIntoView({ behavior: "smooth" });
       }
     }
   }, [currId]);
