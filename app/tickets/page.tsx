@@ -13,13 +13,13 @@ export default function Chatbox() {
   const initial_data = { pages: [], pageParams: [] };
   const router = useRouter();
   const scrollerRef = React.useRef<HTMLDivElement>(null);
-  const [ticketId, setTicketId] = React.useState("");
+  const { id, setId } = useContext(TicketIdContext);
+  const [ticketId, setTicketId] = React.useState(id);
   const [sentFirstMessage, setSentFirstMessage] = React.useState(false);
   const { messageMut, optimisticMessage } = useMessage(ticketId, initial_data);
   const { mutateAsync: asyncMutateMessage } = messageMut;
   const { data } = useInfiniteChat(ticketId, initial_data);
   const path = usePathname();
-  const { setId } = useContext(TicketIdContext);
 
   const handleNewMessage = async (input: string) => {
     setSentFirstMessage(true);
@@ -32,10 +32,9 @@ export default function Chatbox() {
   };
 
   React.useEffect(() => {
-    const newId = nanoid();
-    setId(newId);
-    setTicketId(newId);
-  }, [path]);
+    setTicketId(id);
+    setSentFirstMessage(false);
+  }, [id]);
 
   return (
     <div className="h-full w-full flex flex-col no-scrollbar">

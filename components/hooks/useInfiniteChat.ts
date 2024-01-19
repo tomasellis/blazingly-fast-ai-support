@@ -7,6 +7,8 @@ const useInfiniteChat = (
   initial_data: InfiniteData<Message[], MessageParams>
 ) => {
   return useSuspenseInfiniteQuery({
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
     initialData: initial_data,
     staleTime: Infinity,
     queryKey: ["ticket", ticket_id],

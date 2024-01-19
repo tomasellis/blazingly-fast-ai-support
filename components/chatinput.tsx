@@ -1,11 +1,12 @@
 "use client";
-import React from "react";
+import React, { useContext } from "react";
 import { Button } from "./ui/button";
 import { PaperPlaneIcon } from "@radix-ui/react-icons";
 import TextareaAutosize from "react-textarea-autosize";
 import { usePathname } from "next/navigation";
 import useInfiniteChat from "./hooks/useInfiniteChat";
 import { InfiniteData } from "@tanstack/react-query";
+import { TicketIdContext } from "@/app/tickets/layout";
 
 function ChatInput(props: {
   ticketId: string;
@@ -14,15 +15,20 @@ function ChatInput(props: {
 }) {
   const [input, setInput] = React.useState("");
   const path = usePathname();
+  const { id } = useContext(TicketIdContext);
   const formRef = React.useRef<HTMLFormElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-  const { data, isFetching, isFetchingNextPage } = useInfiniteChat(
+  const { data, isFetching, isFetchingNextPage, isPending } = useInfiniteChat(
     props.ticketId,
     props.initialData
   );
 
+  const [blockSendingMessage, setBlockSendingMessage] = React.useState(false);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (blockSendingMessage) return;
+    setBlockSendingMessage(true);
     const userInput = input.slice(0);
     setInput("");
     console.log("SENDING MESSAGE FROM CHATINPUT");
@@ -34,25 +40,38 @@ function ChatInput(props: {
   ): void => {
     if (
       props.ticketId !== "" &&
-      !isFetching &&
       event.key === "Enter" &&
       !event.shiftKey &&
       !event.nativeEvent.isComposing
     ) {
+      event.stopPropagation();
       event.preventDefault();
       formRef.current?.requestSubmit();
     }
   };
 
+  React.useEffect(() => {
+    setBlockSendingMessage(false);
+  }, [data]);
+
+  React.useEffect(() => {
+    textareaRef?.current?.focus();
+  }, [id]);
+
   return (
     <form
       ref={formRef}
       onSubmit={handleSubmit}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          return;
+        }
+      }}
       className="h-min flex-initial flex w-full justify-center items-center 
       box-border border-solid border-red-500flex px-4 py-4 border-t border-gray-700  bg-gray-800"
     >
       <TextareaAutosize
-        disabled={isFetchingNextPage}
         autoFocus={true}
         name="msg"
         ref={textareaRef}
@@ -84,7 +103,7 @@ function ChatInput(props: {
         variant="default"
         size="icon"
         className="flex items-center rounded-full bg-inherit text-gray-500 hover:bg-indigo-600 hover:text-white transition duration-200 ease-in-out transform hover:scale-105"
-        disabled={isFetchingNextPage}
+        disabled={blockSendingMessage}
         type="submit"
       >
         <PaperPlaneIcon className=" bottom-0 right-0 h-6 w-6 " />

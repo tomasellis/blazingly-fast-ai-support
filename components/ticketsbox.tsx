@@ -19,7 +19,7 @@ export default function TicketsBox() {
         Customer Tickets
       </h2>
       <div className="flex-1 flex flex-col w-full bg-gray-900 overflow-auto">
-        {path !== "/tickets" && <NewTicketTab disabled={isFetching} />}
+        <NewTicketTab disabled={isFetching} />
         <div className="mt-2 px-2 pb-2 text-sm text-gray-500">
           <span>Previous tickets</span>
         </div>
@@ -29,7 +29,7 @@ export default function TicketsBox() {
               <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
             </div>
           )}
-          {!isFetching && !data && (
+          {!isFetching && (data?.length === 0 || data === undefined) && (
             <p className="text-lg">
               No tickets available. Please start a new chat.
             </p>

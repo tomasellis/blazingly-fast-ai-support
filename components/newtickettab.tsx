@@ -1,12 +1,18 @@
-import React from "react";
+import React, { useContext } from "react";
 import "@/styles/loading.css";
 import { cx } from "class-variance-authority";
 import Link from "next/link";
 import { FileTextIcon } from "@radix-ui/react-icons";
+import { useRouter } from "next/navigation";
+import { TicketIdContext } from "@/app/tickets/layout";
+import { nanoid } from "nanoid";
 
 export default function NewTicketTab(props: { disabled: boolean }) {
+  const router = useRouter();
+  const { setId } = useContext(TicketIdContext);
+
   return (
-    <Link href={"/tickets"}>
+    <Link href={"/tickets"} onClick={() => setId(nanoid())}>
       <div
         className={cx(
           `flex-1 flex justify-between items-center rounded-sm px-4 py-3 w-full  text-white border-b border-gray-700
