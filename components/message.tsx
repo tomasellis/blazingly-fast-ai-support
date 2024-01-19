@@ -14,7 +14,7 @@ const Message = React.forwardRef<
     };
     last: boolean;
   }
->((props, ref) => {
+>(function Message(props, ref) {
   if (props.message.role === "ai") {
     return (
       <div
