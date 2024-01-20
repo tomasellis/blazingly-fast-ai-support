@@ -40,11 +40,11 @@ export default function Chatbox() {
     setSentFirstMessage(false);
   }, [id]);
 
-  /* React.useEffect(() => {
+  React.useEffect(() => {
     if (error) {
       throw new Error(error?.message);
     }
-  }, [error]); */
+  }, [error]);
 
   return (
     <div className="h-full w-full flex flex-col no-scrollbar">

@@ -23,7 +23,6 @@ export default function Chat(props: {
 
   const [messageRef, messageInView, entry] = useInView();
 
-
   const [isFetchingTimeout, setIsFetchingTimeout] = React.useState(false);
   const [lastScrollerHeight, setLastScrollerHeight] = React.useState(0);
   const [canDisplayArrow, setCanDisplayArrow] = React.useState(false);
@@ -36,8 +35,13 @@ export default function Chat(props: {
   );
   const { mutateAsync: asyncMutateMessage, isPending: pendingMessage } =
     messageMut;
-  const { data, fetchPreviousPage, hasPreviousPage, isFetchingPreviousPage } =
-    useInfiniteChat(ticketId, props.initialData);
+  const {
+    data,
+    fetchPreviousPage,
+    hasPreviousPage,
+    isFetchingPreviousPage,
+    error,
+  } = useInfiniteChat(ticketId, props.initialData);
 
   const handleNewMessage = async (input: string) => {
     console.log("sending new message", { ticketId });
@@ -106,6 +110,12 @@ export default function Chat(props: {
     const scroller = scrollerRef.current as HTMLDivElement;
     scroller.scrollTop = scroller.scrollHeight;
   }, []);
+
+  React.useEffect(() => {
+    if (error) {
+      throw new Error(error?.message);
+    }
+  }, [error]);
 
   return (
     <div className="h-full w-full flex flex-col no-scrollbar">
