@@ -21,7 +21,7 @@ export default function Chatbox() {
   const [sentFirstMessage, setSentFirstMessage] = React.useState(false);
   const { messageMut, optimisticMessage } = useMessage(ticketId, initial_data);
   const { mutateAsync: asyncMutateMessage } = messageMut;
-  const { data } = useInfiniteChat(ticketId, initial_data);
+  const { data, isError, error } = useInfiniteChat(ticketId, initial_data);
 
   const [messageRef, messageInView, entry] = useInView();
 
@@ -39,6 +39,12 @@ export default function Chatbox() {
     setTicketId(id);
     setSentFirstMessage(false);
   }, [id]);
+
+  /* React.useEffect(() => {
+    if (error) {
+      throw new Error(error?.message);
+    }
+  }, [error]); */
 
   return (
     <div className="h-full w-full flex flex-col no-scrollbar">

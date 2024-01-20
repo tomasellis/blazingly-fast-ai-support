@@ -24,6 +24,14 @@ function ChatInput(props: {
     props.initialData
   );
 
+  const sanitizeRepeatingCharacters = (
+    str: string,
+    maxRepeated: number = 20
+  ) => {
+    const regex = new RegExp(`(.)\\1{${maxRepeated},}`);
+    return str.replace(regex, `${"$1".repeat(20)}`);
+  };
+
   const [blockSendingMessage, setBlockSendingMessage] = React.useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -86,7 +94,7 @@ function ChatInput(props: {
         ref={textareaRef}
         value={input}
         onChange={(e) => {
-          setInput(e.currentTarget.value);
+          setInput(sanitizeRepeatingCharacters(e.currentTarget.value));
         }}
         onKeyDown={(e) => {
           handleKeyDown(e);

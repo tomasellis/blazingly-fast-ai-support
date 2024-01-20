@@ -13,6 +13,7 @@ import useInfiniteChat from "./useInfiniteChat";
 import React, { useContext, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { TicketIdContext } from "@/app/tickets/layout";
+import { useToast } from "@/components/ui/use-toast";
 
 const useMessage = (
   ticket_id: string,
@@ -22,11 +23,13 @@ const useMessage = (
   const { fetchNextPage } = useInfiniteChat(ticket_id, initial_data);
   const path = usePathname();
   const { setId } = useContext(TicketIdContext);
-
+  const { toast } = useToast();
+  const router = useRouter();
   const [optimisticMessage, setOptimisticMessage] =
     React.useState<Message | null>(null);
 
   const messageMut = useMutation({
+    throwOnError: true,
     mutationFn: ({
       content,
       ticket_id,
@@ -74,6 +77,18 @@ const useMessage = (
         );
       }
       setOptimisticMessage(null);
+      return data;
+    },
+    onError: async (error, variables) => {
+      setOptimisticMessage(null);
+      toast({
+        title: "Something went wrong",
+        description: `Internal server error. ${
+          error.message === "Rollback" ? "Avoid repeating characters." : ""
+        }`,
+        variant: "destructive",
+      });
+      console.error("erooooooooor_>_>__>_", error.message, { error });
     },
     onSettled: async (data, error, variables, context) => {
       // Error or success... doesn't matter!

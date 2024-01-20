@@ -4,6 +4,7 @@ import TicketsBox from "@/components/ticketsbox";
 import Link from "next/link";
 import { nanoid } from "nanoid";
 
+
 export const TicketIdContext = React.createContext({
   id: "",
   setId: (id: string) => {},
