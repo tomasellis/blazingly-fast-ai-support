@@ -92,7 +92,7 @@ const useMessage = (
     },
     onSettled: async (data, error, variables, context) => {
       // Error or success... doesn't matter!
-      queryClient.setQueryData<Awaited<ReturnType<typeof get_tickets>>>(
+      /* queryClient.setQueryData<Awaited<ReturnType<typeof get_tickets>>>(
         ["tickets"],
         (oldTickets) => {
           if (oldTickets && data?.newTicket) {
@@ -108,7 +108,7 @@ const useMessage = (
             return nextTickets;
           }
         }
-      );
+      ); */
       await queryClient.invalidateQueries({
         queryKey: ["tickets"],
       });

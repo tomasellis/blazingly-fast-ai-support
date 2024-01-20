@@ -115,6 +115,7 @@ export async function add_message({
       console.log(
         `Execution time: ADD NEW TICKET | START - ${Date.now() - start} ms`
       );
+
       newTicket = await db
         .insert(ticket)
         .values({
@@ -149,7 +150,7 @@ export async function add_message({
     });
 
     let added_message_ai = null;
-
+    let updated_ticket = null;
     try {
       console.log(
         `Execution time: GET AI RESPONSE | START - ${Date.now() - start} ms`
@@ -171,6 +172,19 @@ export async function add_message({
         })
         .returning();
 
+      const summary = await get_ai_summary({
+        ticket_id: added_message_ai[0].ticket_id,
+      });
+      console.log("SUMARY_>__>_>_>__>", { summary });
+      updated_ticket = await db
+        .update(ticket)
+        .set({
+          description: summary.result,
+        })
+        .where(eq(ticket.id, added_message_ai[0].ticket_id))
+        .returning();
+
+      console.log("SUMMARY UPDATED _>__>_>_>_>_", updated_ticket);
       console.log(
         `Execution time: ADD AI MESSAGE TO DB - ${Date.now() - start} ms`
       );
@@ -179,7 +193,7 @@ export async function add_message({
     }
 
     if (newTicket !== null)
-      return { added_message, added_message_ai, newTicket };
+      return { added_message, added_message_ai, newTicket: updated_ticket };
     return { added_message, added_message_ai, newTicket: undefined };
   } catch (err) {
     throw err;
@@ -244,6 +258,54 @@ AI: `;
     return { result: res.output }; */
   } catch (err: any) {
     console.log("ERROR IN GET AI RESPONSE", { err });
+    throw err.message;
+  }
+}
+
+async function get_ai_summary({ ticket_id }: { ticket_id: string }) {
+  try {
+    const ticket = await get_ticket(ticket_id, 4);
+
+    console.log("TICKETM ESKMSAKMDASLKMD ZXCSEA>_>_>_>__>", {
+      ticket,
+      messages: ticket?.messages,
+    });
+
+    const parsed_messages = ticket?.messages
+      .map((message) => {
+        return `${message.role === "ai" ? "AI" : "User"}: ${message.content}`;
+      })
+      .join("\n");
+
+    const INPUT = `System: Summarize conversation between AI and User. User has a request, 
+they have asked for help with something and you need to summarize 
+it in as few words as possible. It will be used as a title. Max of 10 words.
+
+Conversation:
+${parsed_messages}
+
+Summary:`;
+
+    console.log({ INPUT });
+    const chain = new RemoteRunnable({
+      url: server_env.LANGCHAIN_SERVER_URL + "/chat",
+    });
+
+    let result = (await chain.invoke({
+      input: INPUT,
+    })) as string;
+
+    console.log("RESULT_>_>_", result);
+
+    console.log({ result });
+    result = result.replaceAll('^"|"$', "");
+    return { result };
+
+    /*  console.log({ res });
+
+    return { result: res.output }; */
+  } catch (err: any) {
+    console.log("ERROR IN GET AI RESPONSE - Summary", { err });
     throw err.message;
   }
 }
