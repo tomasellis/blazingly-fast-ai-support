@@ -172,17 +172,19 @@ export async function add_message({
         })
         .returning();
 
-      const summary = await get_ai_summary({
-        ticket_id: added_message_ai[0].ticket_id,
-      });
-      console.log("SUMARY_>__>_>_>__>", { summary });
-      updated_ticket = await db
-        .update(ticket)
-        .set({
-          description: summary.result,
-        })
-        .where(eq(ticket.id, added_message_ai[0].ticket_id))
-        .returning();
+      if (newTicket !== null) {
+        const summary = await get_ai_summary({
+          ticket_id: added_message_ai[0].ticket_id,
+        });
+        console.log("SUMARY_>__>_>_>__>", { summary });
+        updated_ticket = await db
+          .update(ticket)
+          .set({
+            description: summary.result,
+          })
+          .where(eq(ticket.id, added_message_ai[0].ticket_id))
+          .returning();
+      }
 
       console.log("SUMMARY UPDATED _>__>_>_>_>_", updated_ticket);
       console.log(
