@@ -17,20 +17,11 @@ export default function TicketsLayout({
   const [id, setId] = React.useState(nanoid());
 
   return (
-    <div className=" h-full flex flex-col bg-gray-900 overflow-y-auto text-white dark ">
-      <div className="flex-1 flex h-full w-full overflow-auto">
-        <TicketIdContext.Provider value={{ id, setId }}>
-          <TicketsBox />
-          <div className="flex-1 flex flex-col bg-gray-900 border-b border-gray-700">
-            <div className="flex justify-center">
-              <h1 className="text-3xl font-bold text-indigo-500">
-                Support Center
-              </h1>
-            </div>
-            <div className="flex-1 flex flex-col">{children}</div>
-          </div>
-        </TicketIdContext.Provider>
-      </div>
+    <div className="h-full flex-1 flex bg-gray-900 text-white dark ">
+      <TicketIdContext.Provider value={{ id, setId }}>
+        <TicketsBox />
+        <div className=" flex flex-col w-full h-full ">{children}</div>
+      </TicketIdContext.Provider>
     </div>
   );
 }

@@ -231,7 +231,7 @@ Here's a list of the islands we have:
 Current conversation:
 ${parsed_messages}
 
-AI: `;
+AI:`;
 
     /* const res: { output: string } = await ky(
       `${server_env.LANGCHAIN_SERVER_URL}/chat/invoke`,

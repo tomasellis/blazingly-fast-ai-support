@@ -118,10 +118,14 @@ export default function Chat(props: {
   }, [error]);
 
   return (
-    <div className="h-full w-full flex flex-col no-scrollbar">
+    <div className="flex-1 flex flex-col w-full h-full overflow-auto">
+      {/* <div className="border-b border-gray-700 flex justify-center items-center p-4">
+        {}
+      </div> */}
+
       <div
         ref={scrollerRef}
-        className="relative h-full no-scrollbar overflow-auto p-4 "
+        className="flex-1 flex flex-col w-full p-4 h-full overflow-auto"
       >
         <div ref={fetchRef} className="w-full"></div>
         <div className="relative w-full flex justify-center">
@@ -143,7 +147,6 @@ export default function Chat(props: {
                     .toReversed()
                     .map((message, msgi) => (
                       <Message
-                        last={false}
                         message={message}
                         key={message.id}
                         ref={
@@ -160,7 +163,7 @@ export default function Chat(props: {
         })}
         {optimisticMessage ? (
           <>
-            <Message message={optimisticMessage} last={false} />
+            <Message message={optimisticMessage} />
             <FakeMessage />
           </>
         ) : null}

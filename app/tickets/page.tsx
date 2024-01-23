@@ -81,7 +81,6 @@ export default function Chatbox() {
                           ? messageRef
                           : null
                       }
-                      last={false}
                       message={message}
                       key={message.id}
                     />
@@ -92,7 +91,7 @@ export default function Chatbox() {
           })}
         {optimisticMessage ? (
           <>
-            <Message message={optimisticMessage} last={false} />
+            <Message message={optimisticMessage} />
             <FakeMessage />
           </>
         ) : null}

@@ -86,7 +86,7 @@ function ChatInput(props: {
         }
       }}
       className="h-min flex-initial flex w-full justify-center items-center 
-      box-border border-solid border-red-500flex px-4 py-4 border-t border-gray-700  bg-gray-800"
+      box-border border-solid px-4 py-4 border-t border-gray-700  bg-gray-800"
     >
       <Textarea
         autoFocus={true}

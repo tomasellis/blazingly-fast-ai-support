@@ -12,7 +12,6 @@ const Message = React.forwardRef<
       ticket_id: string;
       role: "ai" | "user" | null;
     };
-    last: boolean;
   }
 >(function Message(props, ref) {
   if (props.message.role === "ai") {
