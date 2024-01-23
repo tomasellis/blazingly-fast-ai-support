@@ -27,7 +27,6 @@ export default function Chat(props: {
   const [lastScrollerHeight, setLastScrollerHeight] = React.useState(0);
   const [canDisplayArrow, setCanDisplayArrow] = React.useState(false);
 
-  const lastMessageRef = React.useRef<HTMLDivElement>(null);
   const newMessagesRef = React.useRef<HTMLDivElement>(null);
   const { messageMut, optimisticMessage } = useMessage(
     ticketId,
@@ -35,6 +34,7 @@ export default function Chat(props: {
   );
   const { mutateAsync: asyncMutateMessage, isPending: pendingMessage } =
     messageMut;
+
   const {
     data,
     fetchPreviousPage,
@@ -91,15 +91,22 @@ export default function Chat(props: {
 
   // When fetching data try an keep scroll position
   React.useEffect(() => {
-    const scroller = scrollerRef.current as HTMLDivElement;
-    const currScrollerHeight = scroller.scrollHeight;
-    const heightDIff = currScrollerHeight - lastScrollerHeight;
-    scroller.scrollTop += heightDIff;
+    let id = 0;
 
-    // Wait before displaying chevron down
-    const id = window.setTimeout(() => {
-      setCanDisplayArrow(true);
-    }, 500);
+    if (messageInView) {
+      const scroller = scrollerRef.current as HTMLDivElement;
+      scroller.scrollTop = scroller.scrollHeight;
+    } else {
+      const scroller = scrollerRef.current as HTMLDivElement;
+      const currScrollerHeight = scroller.scrollHeight;
+      const heightDIff = currScrollerHeight - lastScrollerHeight;
+      scroller.scrollTop += heightDIff;
+
+      // Wait before displaying chevron down
+      id = window.setTimeout(() => {
+        setCanDisplayArrow(true);
+      }, 500);
+    }
 
     return () => {
       window.clearTimeout(id);

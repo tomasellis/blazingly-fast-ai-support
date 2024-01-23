@@ -21,7 +21,7 @@ export default function Chatbox() {
   const [sentFirstMessage, setSentFirstMessage] = React.useState(false);
   const { messageMut, optimisticMessage } = useMessage(ticketId, initial_data);
   const { mutateAsync: asyncMutateMessage } = messageMut;
-  const { data, isError, error } = useInfiniteChat(ticketId, initial_data);
+  const { data, error } = useInfiniteChat(ticketId, initial_data);
 
   const [messageRef, messageInView, entry] = useInView();
 
@@ -46,11 +46,19 @@ export default function Chatbox() {
     }
   }, [error]);
 
+  React.useEffect(() => {
+    if (messageInView) {
+      const scroller = scrollerRef.current as HTMLDivElement;
+      scroller.scrollTop = scroller.scrollHeight;
+    }
+  }, [data]);
+
   return (
-    <div className="h-full w-full flex flex-col no-scrollbar">
+    <div className="h-full w-full flex flex-col">
       <div
         ref={scrollerRef}
         className="h-full no-scrollbar overflow-auto p-4 space-y-4"
+        style={{ overflowAnchor: "none" }}
       >
         {!sentFirstMessage && (
           <div className="h-full w-full flex flex-col no-scrollbar">
@@ -89,6 +97,7 @@ export default function Chatbox() {
               );
             }
           })}
+        <div style={{ overflowAnchor: "auto", height: "2px" }}></div>
         {optimisticMessage ? (
           <>
             <Message message={optimisticMessage} />

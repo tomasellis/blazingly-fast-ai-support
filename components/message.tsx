@@ -19,7 +19,7 @@ const Message = React.forwardRef<
       <div
         ref={ref}
         key={props.message.id}
-        className="flex items-end justify-start"
+        className="flex items-end justify-start py-1"
         id={props.message.id}
       >
         <div className="flex flex-col space-y-1  max-w-md">
@@ -39,7 +39,7 @@ const Message = React.forwardRef<
     <div
       ref={ref}
       key={props.message.id}
-      className="flex items-end justify-end"
+      className="flex items-end justify-end py-1"
     >
       <div className="flex flex-col space-y-1  max-w-md">
         <p className="text-sm text-gray-400 text-end">
