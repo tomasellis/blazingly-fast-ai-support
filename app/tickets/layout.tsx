@@ -4,7 +4,6 @@ import TicketsBox from "@/components/ticketsbox";
 import Link from "next/link";
 import { nanoid } from "nanoid";
 
-
 export const TicketIdContext = React.createContext({
   id: "",
   setId: (id: string) => {},
@@ -19,15 +18,17 @@ export default function TicketsLayout({
 
   return (
     <div className=" h-full flex flex-col bg-gray-900 overflow-y-auto text-white dark ">
-      <div className="h-[100px]] p-4 bg-gray-900 border-b border-gray-700">
-        <Link href={"/tickets"}>
-          <h1 className="text-3xl font-bold text-indigo-500">Support Center</h1>
-        </Link>
-      </div>
       <div className="flex-1 flex h-full w-full overflow-auto">
         <TicketIdContext.Provider value={{ id, setId }}>
           <TicketsBox />
-          <div className="flex-1 flex flex-col">{children}</div>
+          <div className="flex-1 flex flex-col bg-gray-900 border-b border-gray-700">
+            <div className="flex justify-center">
+              <h1 className="text-3xl font-bold text-indigo-500">
+                Support Center
+              </h1>
+            </div>
+            <div className="flex-1 flex flex-col">{children}</div>
+          </div>
         </TicketIdContext.Provider>
       </div>
     </div>

@@ -12,10 +12,14 @@ export default function NewTicketTab(props: { disabled: boolean }) {
   const { setId } = useContext(TicketIdContext);
 
   return (
-    <Link href={"/tickets"} onClick={() => setId(nanoid())}>
+    <Link
+      href={"/tickets"}
+      onClick={() => setId(nanoid())}
+      className="p-4 w-full"
+    >
       <div
         className={cx(
-          `flex-1 flex justify-between items-center rounded-sm px-4 py-3 w-full  text-white border-b border-gray-700
+          `flex-1 flex justify-between items-center rounded-sm px-4 py-3 text-white border-b border-gray-700
           transition duration-200 
           ease-in-out transform hover:scale-105 hover:font-medium`,
           false
