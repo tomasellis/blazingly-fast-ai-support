@@ -281,7 +281,7 @@ async function get_ai_summary({ ticket_id }: { ticket_id: string }) {
 
     const INPUT = `System: Summarize conversation between AI and User. User has a request, 
 they have asked for help with something and you need to summarize 
-it in as few words as possible. It will be used as a title. Max of 10 words.
+it in as few words as possible. It will be used as a title. Max of 10 words. AI's name is Customer Support. Or just Support.
 
 Conversation:
 ${parsed_messages}
