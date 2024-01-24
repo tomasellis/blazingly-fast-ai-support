@@ -17,7 +17,6 @@ export default function TicketsLayout({
 }) {
   const tailwind_md = 768;
   const [id, setId] = React.useState(nanoid());
-  const { width } = useWindowDimensions();
 
   return (
     <div className="h-full flex-1 flex bg-gray-900 text-white dark ">
