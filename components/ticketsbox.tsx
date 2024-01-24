@@ -83,11 +83,16 @@ export default function TicketsBox() {
             </div>
           </div>
           <div className="flex-1 flex flex-col w-full bg-gray-900 overflow-auto">
-            <NewTicketTab disabled={isFetching}  handleOnClick={() => {
-                            window.setTimeout(() => {
-                              setIsOpen(false);
-                            }, 250);
-                          }}/>
+            <NewTicketTab
+              disabled={isFetching}
+              handleOnClick={() => {
+                window.setTimeout(() => {
+                  if (width < tailwind_md) {
+                    setIsOpen(false);
+                  }
+                }, 250);
+              }}
+            />
             <div className="mt-2 px-2 pb-2 text-sm text-gray-500">
               <span>Previous tickets</span>
             </div>
@@ -112,7 +117,9 @@ export default function TicketsBox() {
                           ticket={ticket}
                           handleOnClick={() => {
                             window.setTimeout(() => {
-                              setIsOpen(false);
+                              if (width < tailwind_md) {
+                                setIsOpen(false);
+                              }
                             }, 250);
                           }}
                         />
