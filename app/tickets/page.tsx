@@ -8,13 +8,15 @@ import useMessage from "@/components/hooks/useMessage";
 import useInfiniteChat from "@/components/hooks/useInfiniteChat";
 import { usePathname, useRouter } from "next/navigation";
 import { TicketIdContext } from "./layout";
-import { ChevronDownIcon } from "@radix-ui/react-icons";
+import {
+  ChevronDownIcon,
+  QuestionMarkCircledIcon,
+} from "@radix-ui/react-icons";
 import useIsOnscreen from "@/components/hooks/useIsOnScreen";
 import { useInView } from "react-intersection-observer";
 
 export default function Chatbox() {
   const initial_data = { pages: [], pageParams: [] };
-  const router = useRouter();
   const scrollerRef = React.useRef<HTMLDivElement>(null);
   const { id, setId } = useContext(TicketIdContext);
   const [ticketId, setTicketId] = React.useState(id);
@@ -58,17 +60,18 @@ export default function Chatbox() {
       <div
         ref={scrollerRef}
         className="h-full no-scrollbar overflow-auto p-4 space-y-4"
-        style={{ overflowAnchor: "none" }}
       >
         {!sentFirstMessage && (
-          <div className="h-full w-full flex flex-col no-scrollbar">
-            <div className="h-full no-scrollbar overflow-auto p-4 space-y-4 flex">
+          <div className="h-full w-full flex flex-col no-scrollbar ">
+            <div className="h-full no-scrollbar overflow-auto p-4 space-y-4 flex items-center">
               <div className="flex-1 flex flex-col h-1/3 justify-center items-center">
-                <span className="text-9xl">{/*  <QuestionMarkSVG /> */}</span>
-                <h1 className="text-5xl font-bold py-4 text-indigo-500">
+                <h1 className="text-5xl font-bold py-4 text-indigo-500 text-center">
                   Welcome to the Support Center
                 </h1>
-                <p className="text-3xl mb-6">How can we help you?</p>
+                <p className="text-3xl mb-6 text-center">
+                  How can we help you?
+                </p>
+                <QuestionMarkCircledIcon width={50} height={50} opacity={0.5} />
               </div>
             </div>
           </div>
@@ -97,7 +100,6 @@ export default function Chatbox() {
               );
             }
           })}
-        <div style={{ overflowAnchor: "auto", height: "2px" }}></div>
         {optimisticMessage ? (
           <>
             <Message message={optimisticMessage} />
