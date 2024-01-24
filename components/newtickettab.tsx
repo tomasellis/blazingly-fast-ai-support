@@ -7,14 +7,20 @@ import { useRouter } from "next/navigation";
 import { TicketIdContext } from "@/app/tickets/layout";
 import { nanoid } from "nanoid";
 
-export default function NewTicketTab(props: { disabled: boolean }) {
+export default function NewTicketTab(props: {
+  disabled: boolean;
+  handleOnClick: () => void;
+}) {
   const router = useRouter();
   const { setId } = useContext(TicketIdContext);
 
   return (
     <Link
       href={"/tickets"}
-      onClick={() => setId(nanoid())}
+      onClick={() => {
+        setId(nanoid());
+        props.handleOnClick();
+      }}
       className="p-4 w-full"
     >
       <div

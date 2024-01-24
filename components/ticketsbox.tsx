@@ -15,7 +15,7 @@ import useWindowDimensions from "./hooks/useWindowDimensions";
 
 export default function TicketsBox() {
   const tailwind_md = 768;
-  const [isOpen, setIsOpen] = React.useState(true);
+  const [isOpen, setIsOpen] = React.useState(false);
   const { data, isFetching } = useTickets();
   const sidebarRef = React.useRef<HTMLDivElement | null>(null);
   /*   if (isError) return <div>Failed getting Tickets</div>; */
@@ -83,7 +83,11 @@ export default function TicketsBox() {
             </div>
           </div>
           <div className="flex-1 flex flex-col w-full bg-gray-900 overflow-auto">
-            <NewTicketTab disabled={isFetching} />
+            <NewTicketTab disabled={isFetching}  handleOnClick={() => {
+                            window.setTimeout(() => {
+                              setIsOpen(false);
+                            }, 250);
+                          }}/>
             <div className="mt-2 px-2 pb-2 text-sm text-gray-500">
               <span>Previous tickets</span>
             </div>
@@ -103,7 +107,15 @@ export default function TicketsBox() {
                   {data &&
                     data.map((ticket, pageIndex) => (
                       <li key={ticket.id}>
-                        <TicketTab key={ticket.id} ticket={ticket} />
+                        <TicketTab
+                          key={ticket.id}
+                          ticket={ticket}
+                          handleOnClick={() => {
+                            window.setTimeout(() => {
+                              setIsOpen(false);
+                            }, 250);
+                          }}
+                        />
                       </li>
                     ))}
                 </ul>

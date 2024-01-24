@@ -7,6 +7,7 @@ import { useTickets } from "./hooks/useTickets";
 import useIsOnscreen from "./hooks/useIsOnScreen";
 
 export default function TicketTab(props: {
+  handleOnClick: () => void;
   ticket: {
     id: string;
     description: string | null;
@@ -42,6 +43,7 @@ export default function TicketTab(props: {
       className={``}
       draggable={false}
       ref={ticketRef}
+      onClick={() => props.handleOnClick()}
     >
       <div
         className={cx(
