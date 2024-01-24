@@ -113,7 +113,7 @@ export default function Chatbox() {
             const scroller = scrollerRef.current as HTMLDivElement;
             scroller.scrollTop = scroller.scrollHeight;
           }}
-          className="absolute right-[25px] bottom-[10%] w-min rounded-full bg-gray-700  text-gray-800 hover:bg-indigo-600 hover:text-white"
+          className="absolute right-[10px] bottom-[100px] w-min rounded-full bg-gray-700  text-gray-800 hover:bg-indigo-600 hover:text-white"
         >
           <ChevronDownIcon className="h-10 w-10" />
         </button>
