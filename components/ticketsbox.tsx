@@ -17,6 +17,7 @@ export default function TicketsBox() {
   const tailwind_md = 768;
   const [isOpen, setIsOpen] = React.useState(true);
   const { data, isFetching } = useTickets();
+  const sidebarRef = React.useRef<HTMLDivElement | null>(null);
   /*   if (isError) return <div>Failed getting Tickets</div>; */
   const path = usePathname();
   const { height, width } = useWindowDimensions();
@@ -27,6 +28,22 @@ export default function TicketsBox() {
     } else {
       setIsOpen(true);
     }
+  }, [width]);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      console.log({ event });
+      if (!sidebarRef.current?.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (width < tailwind_md) {
+      document.addEventListener("click", handleClickOutside, true);
+    }
+    return () => {
+      document.removeEventListener("click", handleClickOutside, true);
+    };
   }, [width]);
 
   return (
@@ -46,7 +63,10 @@ export default function TicketsBox() {
         </div>
       )}
       {isOpen && (
-        <div className="z-10 bg-gray-900 absolute flex flex-col md:static md:w-[300px] md:min-w-[300px] h-full no-scrollbar border-r-2 overflow-x-hidden">
+        <div
+          ref={sidebarRef}
+          className="z-10 bg-gray-900 absolute flex flex-col md:static md:w-[300px] md:min-w-[300px] h-full no-scrollbar border-r-2 overflow-x-hidden"
+        >
           <div className="flex justify-between items-center border-b border-gray-700 bg-inherit">
             <h2 className="h-[65px] text-2xl font-bold text-indigo-500 py-4 px-4 bg-inherit">
               Customer Tickets
